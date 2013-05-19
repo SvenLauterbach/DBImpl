@@ -1,7 +1,7 @@
 /*
 #include <iostream>
-#include "buffermanager.h"
-#include "bufferframe.h"
+#include "BufferManager/buffermanager.h"
+#include "BufferManager/bufferframe.h"
 
 int main(int argc, char **argv) {
     
@@ -16,21 +16,24 @@ int main(int argc, char **argv) {
     {
 	for(int i = 0; i < pagesInInputFile; i++)
 	{
-	    BufferFrame& frame = manager->fixPage(0, true);
+	    BufferFrame& frame = manager->getPage(0, true);
 	    
 	    uint64_t* data = (uint64_t*)frame.getData();
 
 	}
     }
     return 0;
-}*/
+}
+*/
+
 
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
 #include <pthread.h>
-#include "bufferframe.h"
-#include "buffermanager.h"
+#include "BufferManager/bufferframe.h"
+#include "BufferManager/buffermanager.h"
+#include "IO/datafile.h"
 
 using namespace std;
 
@@ -101,8 +104,11 @@ int main(int argc, char** argv) {
    threadSeed = new unsigned[threadCount];
    for (unsigned i=0; i<threadCount; i++)
       threadSeed[i] = i*97134;
+   
+   std::string filename = argv[1];
+   std::unique_ptr<DataSource> src(new DataFile(filename));
 
-   bm = new BufferManager(argv[1], pagesInRAM);
+   bm = new BufferManager(std::move(src), pagesInRAM);
 
    pthread_t threads[threadCount];
    pthread_attr_t pattr;
@@ -137,7 +143,9 @@ int main(int argc, char** argv) {
 
    // restart buffer manager
    delete bm;
-   bm = new BufferManager(argv[1], pagesInRAM);
+   std::string filename2 = argv[1];
+   std::unique_ptr<DataSource> src2(new DataFile(filename2));
+   bm = new BufferManager(std::move(src2), pagesInRAM);
    
    // check counter
    unsigned totalCountOnDisk = 0;
