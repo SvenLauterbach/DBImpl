@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
    std::string filename = argv[1];
    std::unique_ptr<DataSource> src(new DataFile(filename));
 
-   bm = new BufferManager(std::move(src), pagesInRAM);
+   bm = new BufferManager(/*std::move(src)*/ argv[1], pagesInRAM);
 
    pthread_t threads[threadCount];
    pthread_attr_t pattr;
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
    delete bm;
    std::string filename2 = argv[1];
    std::unique_ptr<DataSource> src2(new DataFile(filename2));
-   bm = new BufferManager(std::move(src2), pagesInRAM);
+   bm = new BufferManager(/*std::move(src2)*/ argv[1], pagesInRAM);
    
    // check counter
    unsigned totalCountOnDisk = 0;

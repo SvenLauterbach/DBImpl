@@ -19,7 +19,7 @@ class BufferManager
 {
 
 public:
-    BufferManager(std::unique_ptr<DataSource> dataSource, unsigned size);
+    BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const std::string& filename, unsigned size);
     BufferFrame& getPage(unsigned pageId, bool exclusive);
     void unfixPage(BufferFrame& frame, bool isDirty);
     ~BufferManager();
@@ -31,9 +31,6 @@ private:
     std::unique_ptr<DataSource> dataSource;
     
     int inputFile;
-    /*
-     * Use atomics for avoiding threading problems
-     */
     unsigned int nrPagesInFile;
     unsigned int nrPagesInBuffer;
     unsigned int pagesLoaded;

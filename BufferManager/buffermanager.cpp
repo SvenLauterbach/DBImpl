@@ -2,7 +2,7 @@
 
 
 
-BufferManager::BufferManager(std::unique_ptr<DataSource> dataSource, unsigned size)
+BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const std::string& filename, unsigned size)
 : frameBuffer(), 
   nrPagesInBuffer(size), 
   bufferReplacement(), 
@@ -10,8 +10,16 @@ BufferManager::BufferManager(std::unique_ptr<DataSource> dataSource, unsigned si
   frameBufferLatch(),
   dataSource(std::move(dataSource))
 {
-        
-    nrPagesInFile = (*dataSource).GetSize() / PAGE_SIZE;
+    if((inputFile = open(filename.c_str(), O_RDWR)) < 0)
+    {
+	//Excpetion
+    }    
+    
+    struct stat filestatus;
+    fstat(inputFile, &filestatus);
+    
+     nrPagesInBuffer = filestatus.st_size / PAGE_SIZE;
+    // nrPagesInFile = dataSource->GetSize() / PAGE_SIZE;
     //rameBufferLatch = (pthread_rwlock_t*) malloc(sizeof(pthread_rwlock_t));
     pthread_rwlock_init(&frameBufferLatch, NULL);
     frameBuffer.reserve(size);
@@ -24,7 +32,7 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	 * but before we have to hold the lock for the pageBuffer hashtable, so no 
 	 * other thread can delete the page we are searching for. 
 	 */
-	lockPageBuffer(false);
+	lockPageBuffer(true);
 	
 	if(frameBuffer.find(pageId) != frameBuffer.end())
 	{
@@ -34,7 +42,7 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	     */
 	    std::unique_ptr<BufferFrame> &frame = frameBuffer[pageId];
 	    
-	    unlockPageBuffer();
+	    //unlockPageBuffer();
 	    /*
 	     * we should aquire the frame lock. It is possible that 
 	     * another frame holds this frame lock, so we have to try
@@ -43,9 +51,11 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	     * this is a blocking operation, so the current thread 
 	     * waits until it can get the lock
 	     */
+	    /*
 	    while(!(*frame).lock(exclusive))
 	    {
 	    }
+	    */
 	    
 	    bufferReplacement.increment(pageId);
 	    
@@ -63,16 +73,16 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	     * with the pagebuffer
 	     */
 	    
-	    unlockPageBuffer();
-	    lockPageBuffer(false);
+	    //unlockPageBuffer();
+	    //lockPageBuffer(false);
 	    //before loading the page into ram, check if we have enough free space
 	    if(nrPagesInBuffer == pagesLoaded)
 	    {
-		unlockPageBuffer();
+		//unlockPageBuffer();
 		//not enough space, lets cleanup
 		uint64_t unusedPage = bufferReplacement.getUnusedPages();
 		
-		lockPageBuffer(true);
+		//lockPageBuffer(true);
 		
 		BufferFrame& frame = *frameBuffer[unusedPage];
 		frame.unlock();
@@ -87,17 +97,18 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 		bufferReplacement.unregisterPage(unusedPage);
 		
 		pagesLoaded--;
-		unlockPageBuffer();
+		//unlockPageBuffer();
 		
 	    }
 
-	    unlockPageBuffer();
+	    //unlockPageBuffer();
 	    //Create new BufferFrame in the pageBuffer
 	    std::unique_ptr<BufferFrame> frame = std::unique_ptr<BufferFrame>(new BufferFrame(pageId));
+	    
 	    pread(inputFile, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
 	    frame->lock(exclusive);
 	    
-	    lockPageBuffer(true);
+	    //lockPageBuffer(true);
 	    frameBuffer[pageId] = std::move(frame);
 
 	    pagesLoaded++;
