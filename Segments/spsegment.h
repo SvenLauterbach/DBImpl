@@ -1,6 +1,7 @@
 #ifndef SPSEGMENT_H
 #define SPSEGMENT_H
 #include "segment.h"
+#include "slottedpage.h"
 #include "tid.h"
 #include "record.hpp"
 #include "../BufferManager/buffermanager.h"
@@ -14,9 +15,6 @@ public:
     bool remove(TID recordId);
     const Record& lookup(TID recordId);
     bool update(TID recordId, const Record& record);
-    
-private:
-    BufferManager& bufferManager;
 };
 
 #endif // SPSEGMENT_H

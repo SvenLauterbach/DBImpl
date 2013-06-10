@@ -1,7 +1,7 @@
 #ifndef BTREE_H
 #define BTREE_H
 
-#include </home/sven/projects/BufferManager/Segments/tid.h>
+#include "../Segments/tid.h"
 #include "btreesegment.h"
 
 template<typename T, class cmp>

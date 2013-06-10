@@ -1,7 +1,7 @@
 #ifndef BTREENODE_H
 #define BTREENODE_H
 #include <vector>
-#include </home/sven/projects/BufferManager/Segments/tid.h>
+#include "../Segments/tid.h"
 
 template<typename T, class cmp>
 class BTreeNode

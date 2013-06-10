@@ -6,7 +6,8 @@ BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const st
   bufferReplacement(), 
   pagesLoaded(0), 
   frameBufferLatch(),
-  dataSource(std::move(dataSource))
+  dataSource(std::move(dataSource)),
+  nrPagesInFile(0)
 {
     if((inputFile = open(filename.c_str(), O_RDWR)) < 0)
     {
