@@ -8,6 +8,12 @@ class Segment
 
 public:
     Segment(SegmentInformation info);
+    
+protected:
+    SegmentInformation getSegmentInformation()
+    {
+	return info;
+    }
 
 private:
     SegmentInformation info;

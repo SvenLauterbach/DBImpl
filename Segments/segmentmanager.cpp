@@ -1,4 +1,5 @@
 #include "segmentmanager.h"
+#include "spsegment.h"
 
 SegmentManager::SegmentManager(BufferManager& bufferManager)
  : bufferManager(bufferManager)
@@ -34,7 +35,16 @@ Segment& SegmentManager::getSegment(SegmentID id)
     
     SegmentInformation info = segmentInventory->GetSegment(id);
     
-    auto segment = std::unique_ptr<Segment>(new Segment(info));
+    Segment* segment = nullptr;
+    
+    switch(info.type)
+    {
+	case SegmentType::SP: 
+	    segment = new SPSegment(info, bufferManager);
+	default:
+	    segment = new Segment(info);
+    }
+    
     
     return *segment;
 }

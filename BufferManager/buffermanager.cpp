@@ -1,7 +1,5 @@
 #include "buffermanager.h"
 
-
-
 BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const std::string& filename, unsigned size)
 : frameBuffer(), 
   nrPagesInBuffer(size), 
@@ -18,9 +16,7 @@ BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const st
     struct stat filestatus;
     fstat(inputFile, &filestatus);
     
-     nrPagesInBuffer = filestatus.st_size / PAGE_SIZE;
-    // nrPagesInFile = dataSource->GetSize() / PAGE_SIZE;
-    //rameBufferLatch = (pthread_rwlock_t*) malloc(sizeof(pthread_rwlock_t));
+    nrPagesInBuffer = filestatus.st_size / PAGE_SIZE;
     pthread_rwlock_init(&frameBufferLatch, NULL);
     frameBuffer.reserve(size);
 }
@@ -41,28 +37,9 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	     * this frame
 	     */
 	    std::unique_ptr<BufferFrame> &frame = frameBuffer[pageId];
-	    
-	    //unlockPageBuffer();
-	    /*
-	     * we should aquire the frame lock. It is possible that 
-	     * another frame holds this frame lock, so we have to try
-	     * to get the lock until the other thread release it.
-	     * 
-	     * this is a blocking operation, so the current thread 
-	     * waits until it can get the lock
-	     */
-	    /*
-	    while(!(*frame).lock(exclusive))
-	    {
-	    }
-	    */
-	    
+  
 	    bufferReplacement.increment(pageId);
-	    
-	  
-	    /*
-	     * we have the lock for the frame, so lets return the frame.
-	     */
+
 	    return *frame;
 	}
 	else
@@ -72,17 +49,12 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	     * because we will first create the framebuffer and do nohing
 	     * with the pagebuffer
 	     */
-	    
-	    //unlockPageBuffer();
-	    //lockPageBuffer(false);
+
 	    //before loading the page into ram, check if we have enough free space
 	    if(nrPagesInBuffer == pagesLoaded)
 	    {
-		//unlockPageBuffer();
 		//not enough space, lets cleanup
 		uint64_t unusedPage = bufferReplacement.getUnusedPages();
-		
-		//lockPageBuffer(true);
 		
 		BufferFrame& frame = *frameBuffer[unusedPage];
 		frame.unlock();
@@ -96,19 +68,15 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 		
 		bufferReplacement.unregisterPage(unusedPage);
 		
-		pagesLoaded--;
-		//unlockPageBuffer();
-		
+		pagesLoaded--;		
 	    }
 
-	    //unlockPageBuffer();
 	    //Create new BufferFrame in the pageBuffer
 	    std::unique_ptr<BufferFrame> frame = std::unique_ptr<BufferFrame>(new BufferFrame(pageId));
 	    
 	    pread(inputFile, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
 	    frame->lock(exclusive);
-	    
-	    //lockPageBuffer(true);
+
 	    frameBuffer[pageId] = std::move(frame);
 
 	    pagesLoaded++;
@@ -142,7 +110,7 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty)
 
 BufferManager::~BufferManager()
 {
-    //pthread_rwlock_destroy(frameBufferLatch);
+    pthread_rwlock_destroy(&frameBufferLatch);
     close(inputFile);
 }
 
