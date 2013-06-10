@@ -44,3 +44,14 @@ TID SPSegment::insert(const Record& record)
     //found no free space, exception
 }
 
+bool SPSegment::remove(TID recordId)
+{
+	return true;
+}
+
+bool SPSegment::update(TID recordId, const Record& record)
+{
+	return true;
+
+}
+
