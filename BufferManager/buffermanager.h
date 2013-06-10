@@ -10,7 +10,6 @@
 #include <queue>
 #include <sys/stat.h>
 #include <pthread.h>
-#include <atomic>
 #include "bufferframe.h"
 #include "bufferreplacementstrategy.h"
 #include "../IO/datasource.h"
