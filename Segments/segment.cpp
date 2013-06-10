@@ -1,7 +1,7 @@
 #include "segment.h"
 
-Segment::Segment(SegmentInformation info)
-: info(info)
+Segment::Segment(SegmentInformation info, BufferManager& bm)
+: info(info), bufferManager(bm)
 {
 
 }

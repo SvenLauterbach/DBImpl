@@ -5,6 +5,11 @@ SlottedPage::SlottedPage(void* pageData)
     
 }
 
+const Record& SlottedPage::lookup(TID recordId)
+{
+
+}
+
 TID SlottedPage::insert(const Record& record)
 {
     /*

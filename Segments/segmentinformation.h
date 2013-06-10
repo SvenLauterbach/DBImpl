@@ -1,8 +1,7 @@
 #ifndef SEGMENTINFORMATION_H
 #define SEGMENTINFORMATION_H
 
-
-enum SegmentType { SP };
+enum SegmentType { SP, BT};
 
 class SegmentInformation
 {

@@ -1,5 +1,5 @@
 #include "segmentmanager.h"
-#include "spsegment.h"
+
 
 SegmentManager::SegmentManager(BufferManager& bufferManager)
  : bufferManager(bufferManager)
@@ -14,13 +14,8 @@ SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int si
     BufferFrame& frame = bufferManager.getPage(0, true);
     SISegment* segmentInventory = static_cast<SISegment*>(frame.getData());	
 
-    
-    switch(segmentType)
-    {
-	case SegmentType::SP:
-	    result = segmentInventory->CreateSegment(SegmentType::SP, size);
-	    
-    }
+
+	result = segmentInventory->CreateSegment(segmentType, size);
     
     bufferManager.unfixPage(frame, true);
     
@@ -39,12 +34,14 @@ Segment& SegmentManager::getSegment(SegmentID id)
     
     switch(info.type)
     {
-	case SegmentType::SP: 
+	case SegmentType::SP:
 	    segment = new SPSegment(info, bufferManager);
 	    break;
+	case SegmentType::BT:
+		segment = new BTreeSegment(info, bufferManager);
+		break;
 	default:
-	    segment = new Segment(info);
-	    break;
+	    segment = new Segment(info, bufferManager);
     }
     
     
