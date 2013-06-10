@@ -22,7 +22,7 @@ TID SlottedPage::insert(const Record& record)
 }
 
 /*
- * ToDo: change return type, iterator is strange and only for the "slots.end()" comparission
+ * ToDo: change return type, iterator is strange and only for the "slots.end()" comparison
  * if we found no free slot
  */
 std::vector<SlottedPage::SlottedPageSlot>::iterator SlottedPage::getFreeSlot(unsigned int size)

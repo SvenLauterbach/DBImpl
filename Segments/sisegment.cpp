@@ -16,7 +16,7 @@ unsigned int SISegment::CreateSegment(SegmentType type, unsigned int size)
      */
     
     /*
-     * according to http://www.cplusplus.com/reference/map/map/ a map is alway ordered
+     * according to http://www.cplusplus.com/reference/map/map/ a map is always ordered
      * by its key. so we know the last element in the map is the last segment which was
      * inserted, because we autoincrement the key.
      */
