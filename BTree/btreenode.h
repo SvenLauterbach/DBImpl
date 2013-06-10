@@ -1,23 +1,26 @@
 #ifndef BTREENODE_H
 #define BTREENODE_H
-#include <vector>
-#include </home/sven/projects/BufferManager/Segments/tid.h>
+
+class TID;
+
+#define NODE_SIZE 4
 
 template<typename T, class cmp>
 class BTreeNode
 {
+public:
     BTreeNode();
+    virtual ~BTreeNode();
     void add(std::pair<T, TID> value);
     void remove(T key);
-    TID lookup(T Key);
+    TID find(T key);
+    bool isLeaf() { return _isLeaf; };
     
     
-private:
-   
-    std::vector<T> keySlots;
-    std::vector<T> childPointers;
+protected:
+    // TODO LSN for recovery
     int count;
-    bool isLeave;
+    bool _isLeaf;
 };
 
 #endif // BTREENODE_H

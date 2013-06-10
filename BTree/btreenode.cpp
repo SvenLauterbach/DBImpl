@@ -3,9 +3,11 @@
 template<typename T, class cmp>
 BTreeNode<T, cmp>::BTreeNode()
 {
-
+	_isLeaf = false;
+	count = 0;
 }
 
+/*
 template<typename T, class cmp>
 void BTreeNode<T, cmp>::add(std::pair< T, TID > value)
 {
@@ -23,6 +25,6 @@ void BTreeNode<T, cmp>::remove(T key)
 {
 
 }
-
+*/
 
 
