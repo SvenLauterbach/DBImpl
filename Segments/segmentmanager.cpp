@@ -41,8 +41,10 @@ Segment& SegmentManager::getSegment(SegmentID id)
     {
 	case SegmentType::SP: 
 	    segment = new SPSegment(info, bufferManager);
+	    break;
 	default:
 	    segment = new Segment(info);
+	    break;
     }
     
     
