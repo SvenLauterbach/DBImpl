@@ -2,6 +2,7 @@
 #define LEAFNODE_H_
 
 #include "btreenode.h"
+#include "../Segments/tid.h"
 
 template<typename T, class cmp>
 class LeafNode : public BTreeNode<T,cmp>

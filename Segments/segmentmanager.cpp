@@ -7,7 +7,10 @@ SegmentManager::SegmentManager(BufferManager& bufferManager)
 
 }
 
-SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int size)
+/*
+ * Default Größe = 2 Page
+ */
+SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int size = 2)
 {
     SegmentID result;
     

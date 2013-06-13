@@ -17,10 +17,10 @@ LeafNode<T, cmp>::~LeafNode()
 template<typename T, class cmp>
 TID LeafNode<T,cmp>::find(T searchKey) {
 
-	for ( int i = 0; i < count; i++) {
+	for ( int i = 0; i < this->count; i++) {
 		if ( !cmp(key[i], searchKey) ) {
 			return tid[i];
 		}
 	}
-	return NULL;
+	return nullptr;
 }

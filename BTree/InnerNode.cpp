@@ -17,7 +17,7 @@ InnerNode<T,cmp>::~InnerNode()
 template<typename T, class cmp>
 TID InnerNode<T,cmp>::find(T searchKey) {
 
-	for ( int i = 0; i < count; i++) {
+	for ( int i = 0; i < this->count; i++) {
 		if ( !cmp(key[i], searchKey) ) {
 			return child[i];
 		}

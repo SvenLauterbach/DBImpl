@@ -2,6 +2,7 @@
 #define InnerNode_H_
 
 #include "btreenode.h"
+#include "../Segments/tid.h"
 
 template<typename T, class cmp>
 class InnerNode: public BTreeNode<T,cmp>
