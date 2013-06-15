@@ -9,8 +9,6 @@ const Record& SPSegment::lookup(TID recordId)
 {
 	SegmentInformation infos = getSegmentInformation();
 
-	unsigned int firstpage = infos.offset;
-	unsigned int lastpage = infos.offset + infos.nrOfPages;
 	BufferManager& bufferManager = getBufferManager();
 	BufferFrame& frame = bufferManager.getPage(recordId.getPageId(), true);
 	SlottedPage slottedPage(frame.getData());
@@ -24,13 +22,15 @@ TID SPSegment::insert(const Record& record)
     
     BufferManager& bufferManager = getBufferManager();
 
+    /*
     unsigned int firstpage = infos.offset;
     unsigned int lastpage = infos.offset + infos.nrOfPages;
-    
+    */
     /*
      * iterate over all pages of this segment and find a page which has enough free space to
      * store the record
      */
+    /*
     for(unsigned int i = firstpage; i <= lastpage; i++)
     {
 		BufferFrame& frame = bufferManager.getPage(i, true);
@@ -48,7 +48,7 @@ TID SPSegment::insert(const Record& record)
 
 		bufferManager.unfixPage(frame, false);
     }
-    
+    */
     //found no free space, exception
 }
 

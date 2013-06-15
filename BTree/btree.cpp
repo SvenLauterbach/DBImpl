@@ -3,6 +3,7 @@
 #include "../Segments/tid.h"
 #include "btreesegment.h"
 #include "btreenode.h"
+#include "InnerNode.h"
 
 template<typename T, class cmp>
 BTree<T, cmp>::BTree(BTreeSegment segment)

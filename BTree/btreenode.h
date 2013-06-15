@@ -1,6 +1,7 @@
 #ifndef BTREENODE_H
 #define BTREENODE_H
 #include <utility>
+#include "../Segments/tid.h"
 class TID;
 
 #define NODE_SIZE 4
@@ -17,6 +18,7 @@ public:
     bool isLeaf() { return _isLeaf; };
     bool isFull() { return count == NODE_SIZE; }
     bool isHalfFull() { return count >= NODE_SIZE/2; }
+    TID lookup(T Key);
 
     
     

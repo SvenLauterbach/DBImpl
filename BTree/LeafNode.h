@@ -12,8 +12,10 @@ public:
 	virtual ~LeafNode();
 	TID find(T searchKey);
 	LeafNode<T,cmp>& split();
+	void add(T newKey, TID value);
+	void remove(T searchKey);
 
-	T maxKey() { return key[count-1]; }
+	T maxKey() { return key[this->count-1]; }
 
 
 private:

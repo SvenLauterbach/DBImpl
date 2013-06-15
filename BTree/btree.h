@@ -6,7 +6,7 @@ template<typename T, class cmp> class BTreeNode;
 template<typename T, class cmp> class LeafNode;
 class TID;
 
-
+#include "btreesegment.h"
 /*#include "../Segments/tid.h"
 #include "btreesegment.h"
 #include "btreenode.h"

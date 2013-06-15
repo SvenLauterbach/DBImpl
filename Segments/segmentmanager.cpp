@@ -12,17 +12,29 @@ SegmentManager::SegmentManager(BufferManager& bufferManager)
  */
 SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int size = 2)
 {
-    SegmentID result;
     
+
     BufferFrame& frame = bufferManager.getPage(0, true);
     SISegment* segmentInventory = static_cast<SISegment*>(frame.getData());	
 
 
-	result = segmentInventory->CreateSegment(segmentType, size);
+    SegmentInformation  result = segmentInventory->CreateSegment(segmentType, size);
     
     bufferManager.unfixPage(frame, true);
     
-    return result;
+    int fileHandle = 0;
+
+    if((fileHandle = open(result.fileName.c_str(), O_CREAT)) < 0)
+    {
+    	//exception
+    }
+
+    if(posix_fallocate(fileHandle, 0 , size * PAGE_SIZE) < 0)
+    {
+    	//exception
+    }
+
+    return result.segmentId;
 }
 
 Segment& SegmentManager::getSegment(SegmentID id)
@@ -46,8 +58,7 @@ Segment& SegmentManager::getSegment(SegmentID id)
 	default:
 	    segment = new Segment(info, bufferManager);
     }
-    
-    
+
     return *segment;
 }
 

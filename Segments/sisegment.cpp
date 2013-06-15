@@ -5,7 +5,7 @@ SISegment::SISegment()
 
 }
 
-unsigned int SISegment::CreateSegment(SegmentType type, unsigned int size)
+SegmentInformation SISegment::CreateSegment(SegmentType type, unsigned int size)
 {
     /*
      * we should create a Segment so we need to gather the following information:
@@ -23,15 +23,18 @@ unsigned int SISegment::CreateSegment(SegmentType type, unsigned int size)
     std::map<unsigned int, SegmentInformation>::iterator it = segments.end();
     
     SegmentInformation SegInfos = (*it).second;
-    
-    SegmentInformation newSegInfos(SegInfos.segmentId + 1,
+    unsigned int id = SegInfos.segmentId + 1;
+    std::stringstream sstm;
+    sstm << "segment." << id << ".db" << std::endl;
+
+    SegmentInformation newSegInfos(id,
 				    type,
-				    SegInfos.offset + SegInfos.nrOfPages,
+				    sstm.str(),
 				    size);
     
     segments.insert(std::pair<unsigned int, SegmentInformation>(newSegInfos.segmentId, newSegInfos));
     
-    return newSegInfos.segmentId;
+    return newSegInfos;
 }
 
 SegmentInformation SISegment::GetSegment(unsigned int id)
