@@ -1,10 +1,11 @@
 #ifndef BTREESEGMENT_H
 #define BTREESEGMENT_H
 
- #include <string.h>
+#include <string.h>
 #include "btreenode.h"
 #include "../Segments/tid.h"
 #include "../Segments/segment.h"
+#include "../Segments/FreeSpaceInventory.h"
 #include "../BufferManager/buffermanager.h"
 
 class SegmentInformation;

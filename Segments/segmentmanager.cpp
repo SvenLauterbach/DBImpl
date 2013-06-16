@@ -12,16 +12,19 @@ SegmentManager::SegmentManager(BufferManager& bufferManager)
  */
 SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int size = 2)
 {
-    
-
-    BufferFrame& frame = bufferManager.getPage(0, true);
+	/*
+	 * we need the segment Inventory to register the created segment
+	 */
+	BufferFrame& frame = bufferManager.getPage(0, true);
     SISegment* segmentInventory = static_cast<SISegment*>(frame.getData());	
-
 
     SegmentInformation  result = segmentInventory->CreateSegment(segmentType, size);
     
     bufferManager.unfixPage(frame, true);
     
+    /*
+     * after creating registering the new segment we have to create the file for the segment
+     */
     int fileHandle = 0;
 
     if((fileHandle = open(result.fileName.c_str(), O_CREAT)) < 0)

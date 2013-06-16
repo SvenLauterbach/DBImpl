@@ -2,5 +2,6 @@
 
 int main(int argc, char** argv)
 {
-	main_segments(argc, argv);
+	//main_segments(argc, argv);
+
 }

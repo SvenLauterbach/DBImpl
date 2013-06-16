@@ -20,12 +20,22 @@ public:
     bool isHalfFull() { return count >= NODE_SIZE/2; }
     TID lookup(T Key);
 
-    
+    //ToDO: refactor inline getter
+    unsigned int getId()
+    {
+    	return id;
+    }
     
 protected:
     // TODO LSN for recovery
     int count;
     bool _isLeaf;
+
+    /*
+     *  the id is usefull to reference this node in other nodes
+     *  and we can use this id as a page id in the segment;
+     */
+    unsigned int id;
 };
 
 #endif // BTREENODE_H

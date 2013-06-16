@@ -2,6 +2,7 @@
 #define SEGMENTINFORMATION_H
 
 #include <string>
+#include <vector>
 
 enum SegmentType { SP, BT};
 
@@ -14,6 +15,7 @@ public:
     SegmentType type;
     unsigned int nrOfPages;
     std::string fileName;
+    std::vector<unsigned int> freePages;
 };
 
 #endif // SEGMENTINFORMATION_H
