@@ -1,4 +1,5 @@
 #include "buffermanager.h"
+#include <string.h>
 
 BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const std::string& filename, unsigned size)
 : frameBuffer(), 
@@ -9,17 +10,24 @@ BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const st
   dataSource(std::move(dataSource)),
   nrPagesInFile(0)
 {
-    if((inputFile = open(filename.c_str(), O_RDWR)) < 0)
+    if((inputFile = open(filename.c_str(), O_CREAT | O_RDWR)) < 0)
     {
 	//Excpetion
     }    
     
-    struct stat filestatus;
-    fstat(inputFile, &filestatus);
+    unsigned int fileSize = getFileSize();
     
-    nrPagesInBuffer = filestatus.st_size / PAGE_SIZE;
+    nrPagesInBuffer = fileSize / PAGE_SIZE;
     pthread_rwlock_init(&frameBufferLatch, NULL);
     frameBuffer.reserve(size);
+}
+
+unsigned int BufferManager::getFileSize()
+{
+	struct stat filestatus;
+	fstat(inputFile, &filestatus);
+
+	return filestatus.st_size;
 }
 
 BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
@@ -75,7 +83,22 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	    //Create new BufferFrame in the pageBuffer
 	    std::unique_ptr<BufferFrame> frame = std::unique_ptr<BufferFrame>(new BufferFrame(pageId));
 	    
-	    pread(inputFile, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
+	    //check if the requested page is out of scope
+	    if(nrPagesInFile <= pageId)
+	    {
+	    	/*
+	    	 * the file is to small to contain the requested page
+	    	 * so we should grow the file and fill the new space
+	    	 * with zeroes
+	    	 */
+	    	unsigned int fileSize = getFileSize();
+	    	off_t sizef = lseek(inputFile, 0, SEEK_END);
+			ftruncate(inputFile, 0);
+			ftruncate(inputFile, fileSize + 5 * PAGE_SIZE);
+	    }
+
+    	pread(inputFile, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
+
 	    frame->lock(exclusive);
 
 	    frameBuffer[pageId] = std::move(frame);

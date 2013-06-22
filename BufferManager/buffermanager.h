@@ -10,6 +10,7 @@
 #include <queue>
 #include <sys/stat.h>
 #include <pthread.h>
+
 #include "bufferframe.h"
 #include "bufferreplacementstrategy.h"
 #include "../IO/datasource.h"
@@ -52,6 +53,8 @@ private:
 	pthread_rwlock_unlock(&frameBufferLatch);
     }
     
+    unsigned int getFileSize();
+
 };
 
 #endif // BUFFERMANAGER_H

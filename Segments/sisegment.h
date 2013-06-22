@@ -17,8 +17,7 @@ public:
     void Grow(unsigned int id, unsigned int size);
     
 private:
-    /* map segments id's to pages */
-    std::map<unsigned int, SegmentInformation> segments;
+    std::vector<SegmentInformation> segments;
 };
 
 #endif // SISEGMENT_H

@@ -6,3 +6,13 @@ SegmentInformation::SegmentInformation(unsigned int id, SegmentType type, std::s
 
 }
 
+SegmentInformation::SegmentInformation(const SegmentInformation& rhs)
+	: fileName(rhs.fileName),
+	  segmentId(rhs.segmentId),
+	  type(rhs.type),
+	  nrOfPages(rhs.nrOfPages),
+	  freePages(rhs.freePages)
+{
+
+}
+

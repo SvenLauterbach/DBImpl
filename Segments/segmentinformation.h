@@ -11,6 +11,8 @@ class SegmentInformation
 
 public:
     SegmentInformation(unsigned int id, SegmentType type, std::string fileName, unsigned int nrOfPages);
+    SegmentInformation(const SegmentInformation& rhs);
+
     unsigned int segmentId;
     SegmentType type;
     unsigned int nrOfPages;
