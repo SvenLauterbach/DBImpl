@@ -4,13 +4,22 @@ SISegment::SISegment() : segments()
 {
 }
 
+
 SegmentInformation SISegment::CreateSegment(SegmentType type, unsigned int size)
 {
+	/*
+	 * before creating a segment we need to determine the id.
+	 * If this is not the first segment we increment the id
+	 * of the last segment
+	 *
+	 */
 	unsigned int id = 0;
 
 	if(segments.size() != 0)
 	{
-		SegmentInformation segInfos = segments[id];
+		std::vector<SegmentInformation>::reverse_iterator it = segments.rbegin();
+		SegmentInformation s = (*it);
+		id = s.segmentId + 1;
 	}
     
     std::stringstream sstm;

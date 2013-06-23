@@ -6,7 +6,7 @@
 
 enum SegmentType { SP, BT};
 
-class SegmentInformation
+struct SegmentInformation
 {
 
 public:

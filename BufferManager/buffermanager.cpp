@@ -7,17 +7,16 @@ BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const st
   bufferReplacement(), 
   pagesLoaded(0), 
   frameBufferLatch(),
-  dataSource(std::move(dataSource)),
   nrPagesInFile(0)
 {
-    if((inputFile = open(filename.c_str(), O_CREAT | O_RDWR)) < 0)
+    if((inputFile = open(filename.c_str(), O_CREAT | O_RDWR, S_IRUSR|S_IWUSR)) < 0)
     {
-	//Excpetion
+    	//Excpetion
     }    
     
     unsigned int fileSize = getFileSize();
     
-    nrPagesInBuffer = fileSize / PAGE_SIZE;
+    nrPagesInFile = fileSize / PAGE_SIZE;
     pthread_rwlock_init(&frameBufferLatch, NULL);
     frameBuffer.reserve(size);
 }
@@ -62,40 +61,26 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	    //before loading the page into ram, check if we have enough free space
 	    if(nrPagesInBuffer == pagesLoaded)
 	    {
-		//not enough space, lets cleanup
-		uint64_t unusedPage = bufferReplacement.getUnusedPages();
-		
-		BufferFrame& frame = *frameBuffer[unusedPage];
-		frame.unlock();
-		/*
-		 * before we remove the frame we have to get a write lock 
-		 * on the pageBuffer
-		 */
-				
-		frameBuffer.erase(unusedPage);
-		
-		
-		bufferReplacement.unregisterPage(unusedPage);
-		
-		pagesLoaded--;		
+			//not enough space, lets cleanup
+			uint64_t unusedPage = bufferReplacement.getUnusedPages();
+
+			BufferFrame& frame = *frameBuffer[unusedPage];
+			frame.unlock();
+			/*
+			 * before we remove the frame we have to get a write lock
+			 * on the pageBuffer
+			 */
+
+			frameBuffer.erase(unusedPage);
+
+
+			bufferReplacement.unregisterPage(unusedPage);
+
+			pagesLoaded--;
 	    }
 
 	    //Create new BufferFrame in the pageBuffer
 	    std::unique_ptr<BufferFrame> frame = std::unique_ptr<BufferFrame>(new BufferFrame(pageId));
-	    
-	    //check if the requested page is out of scope
-	    if(nrPagesInFile <= pageId)
-	    {
-	    	/*
-	    	 * the file is to small to contain the requested page
-	    	 * so we should grow the file and fill the new space
-	    	 * with zeroes
-	    	 */
-	    	unsigned int fileSize = getFileSize();
-	    	off_t sizef = lseek(inputFile, 0, SEEK_END);
-			ftruncate(inputFile, 0);
-			ftruncate(inputFile, fileSize + 5 * PAGE_SIZE);
-	    }
 
     	pread(inputFile, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
 
@@ -121,7 +106,7 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty)
     //if page was modified (= is Dirty) then we should write it back to disk
     if(isDirty)
     {
-	pwrite(inputFile, frame.getData(), PAGE_SIZE, frame.getPageId() * PAGE_SIZE);
+    	pwrite(inputFile, frame.getData(), PAGE_SIZE, frame.getPageId() * PAGE_SIZE);
     }
     
     frame.unlock();

@@ -28,7 +28,6 @@ private:
     std::unordered_map<uint64_t, std::unique_ptr<BufferFrame>> frameBuffer;
     BufferReplacementStrategy bufferReplacement;
     pthread_rwlock_t frameBufferLatch;
-    std::unique_ptr<DataSource> dataSource;
     
     int inputFile;
     unsigned int nrPagesInFile;

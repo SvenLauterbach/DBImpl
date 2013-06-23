@@ -15,6 +15,7 @@ public:
     SegmentInformation CreateSegment(SegmentType type, unsigned int size);
     SegmentInformation GetSegment(unsigned int id);
     void Grow(unsigned int id, unsigned int size);
+    unsigned int Size() { return segments.size(); }
     
 private:
     std::vector<SegmentInformation> segments;

@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <climits>
 
 class TID
 {
@@ -19,6 +20,8 @@ public:
     	TID o = other;
     	return (pageId == o.getPageId() && slotId == o.getSlotId());
     }
+
+
 
 private:
     unsigned int pageId;
