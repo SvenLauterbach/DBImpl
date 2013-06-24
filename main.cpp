@@ -4,6 +4,8 @@
 #include "BTree/btree.h"
 #include "BTree/btreenode.h"
 #include "Segments/segmentinformation.h"
+#include "Segments/SchemaSegment.h"
+#include "Parser/Parser.hpp"
 #include <iostream>
 #include <map>
 
@@ -11,8 +13,9 @@ bool BufferManagerSimpleTest();
 bool BTreeNodeSimpleTest();
 bool SISegmentSimpleTest();
 
-int main(int argc, char** argv)
+int main_parser(int argc, char** argv)
 {
+
 
 	if(BufferManagerSimpleTest() == true)
 	{
@@ -45,6 +48,24 @@ int main(int argc, char** argv)
 	else
 	{
 		std::cout << "[failed] - SISegmentSimpleTest" << std::endl;
+	}
+
+}
+
+bool SchemaSegmentSimpleTest()
+{
+	BufferManager bm("data.db", 1024);
+
+	SchemaSegment segment;
+
+	Parser p("");
+
+
+	std::unique_ptr<Schema> schema = p.parse();
+
+	for(auto relation : schema->relations)
+	{
+		//segment.AddRelation(relation);
 	}
 }
 

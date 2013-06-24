@@ -7,7 +7,7 @@
 
 class SlottedPageSlot {
 public:
-	unsigned int offset;
+	void* offset;
 	unsigned int length;
 	bool isFree;
 };

@@ -85,7 +85,7 @@ int BTreeNode<T, cmp>::getIndex(T Key)
 
 	if(it == keys.end())
 	{
-		return -1;
+		//return ;
 	}
 
 	int index = it - keys.begin();

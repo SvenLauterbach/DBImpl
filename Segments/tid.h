@@ -21,8 +21,6 @@ public:
     	return (pageId == o.getPageId() && slotId == o.getSlotId());
     }
 
-
-
 private:
     unsigned int pageId;
     unsigned int slotId;

@@ -26,6 +26,11 @@ TID SlottedPage::insert(const Record& record)
     }
 
     SlottedPageSlot slot = slots[freeSlot];
+    header.freeSpace =  (void*)header.freeSpace - record.getLen();
+    memcpy(header.freeSpace, record.getData(), record.getLen());
+    slot.isFree = false;
+    slot.length = record.getLen();
+    slot.offset = header.freeSpace;
 
 }
 
