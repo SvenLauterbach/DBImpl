@@ -11,7 +11,7 @@ const Record& SPSegment::lookup(TID recordId)
 
 	BufferManager& bufferManager = getBufferManager();
 	BufferFrame& frame = bufferManager.getPage(recordId.getPageId(), true);
-	SlottedPage slottedPage(frame.getData());
+	SlottedPage slottedPage;
 
 	return slottedPage.lookup(recordId);
 }

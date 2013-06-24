@@ -1,6 +1,6 @@
 #include "slottedpage.h"
 
-SlottedPage::SlottedPage(void* pageData)
+SlottedPage::SlottedPage()
 {
     
 }

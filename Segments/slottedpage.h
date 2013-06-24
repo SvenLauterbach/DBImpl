@@ -16,14 +16,14 @@ class SlottedPageHead {
 public:
 	unsigned int slotCount;
 	unsigned int dataStart;
-	unsigned int freeSpace;
+	void* freeSpace; //pointer to the end of the freespace
 };
 
 class SlottedPage
 {
 
 public:
-	SlottedPage(void* pageData);
+	SlottedPage();
 
 	TID insert(const Record& record);
 	bool remove(TID recordId);
