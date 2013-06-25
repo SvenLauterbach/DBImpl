@@ -3,7 +3,7 @@
 #include "Parser.hpp"
 #include "Schema.hpp"
 
-int main(int argc, char* argv[]) {
+int main_parser(int argc, char* argv[]) {
    if (argc != 2) {
       std::cerr << "usage: " << argv[0] << " <schema file>" << std::endl;
       return -1;
