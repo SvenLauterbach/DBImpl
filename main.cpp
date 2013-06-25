@@ -12,10 +12,10 @@
 bool BufferManagerSimpleTest();
 bool BTreeNodeSimpleTest();
 bool SISegmentSimpleTest();
+bool test();
 
-int main_parser(int argc, char** argv)
+int main(int argc, char** argv)
 {
-
 
 	if(BufferManagerSimpleTest() == true)
 	{
@@ -39,7 +39,7 @@ int main_parser(int argc, char** argv)
 
 	Segmentation fault
 
-	*/
+
 
 	if(SISegmentSimpleTest() == true)
 	{
@@ -48,8 +48,46 @@ int main_parser(int argc, char** argv)
 	else
 	{
 		std::cout << "[failed] - SISegmentSimpleTest" << std::endl;
+	}*/
+
+	std::cout << test();
+
+}
+
+bool test()
+{
+	BufferManager bm("data.db", 1024);
+
+	std::vector<int> ints;
+
+	for(int i = 0; i < 100; i++)
+	{
+		ints.push_back(i);
 	}
 
+	BufferFrame& frame = bm.getPage(3, true);
+
+	//(*(frame.getData())) = ints;
+	memcpy(&ints, frame.getData(), sizeof(ints));
+
+	bm.unfixPage(frame, true);
+
+	BufferFrame& frame_test = bm.getPage(3, true);
+
+	std::vector<int> ints_test;
+
+	memcpy(frame.getData(), &ints_test, sizeof(ints));
+	//ints_test = (*(frame.getData()));
+
+	for(int i = 0; i < 100; i++)
+	{
+		if(ints.at(i) != ints_test.at(i))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool SchemaSegmentSimpleTest()

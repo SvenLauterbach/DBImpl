@@ -5,6 +5,7 @@
 #include "tid.h"
 #include "record.hpp"
 #include "../BufferManager/buffermanager.h"
+#include "slottedpage.h"
 
 class SPSegment : public Segment
 {
@@ -15,6 +16,9 @@ public:
     bool remove(TID recordId);
     const Record& lookup(TID recordId);
     bool update(TID recordId, const Record& record);
+
+private:
+    SlottedPageSlot* getSlot(BufferFrame& frame, TID recordId);
 };
 
 #endif // SPSEGMENT_H

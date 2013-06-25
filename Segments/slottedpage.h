@@ -15,32 +15,23 @@ public:
 class SlottedPageHead {
 public:
 	unsigned int slotCount;
-	unsigned int dataStart;
+
+	/*
+	 * this pointer points to the adress where the first records start
+	 */
+	void* dataStart;
+
+	/*
+	 * this pointer points to the address where the last slot ends
+	 * (the address where the free space begins)
+	 */
 	void* freeSpace; //pointer to the end of the freespace
 };
 
 class SlottedPage
 {
-
-public:
-	SlottedPage();
-
-	TID insert(const Record& record);
-	bool remove(TID recordId);
-	const Record& lookup(TID recordId);
-	bool update(TID recordId, const Record& record);
-
-	SlottedPageHead getHeader()
-	{
-	    return header;
-	}
-
-private:
-
 	SlottedPageHead header;
-	std::vector<SlottedPageSlot> slots;
-
-	int getFreeSlot(unsigned int size);
+	SlottedPageSlot slots[1];
 };
 
 #endif // SLOTTEDPAGE_H
