@@ -7,6 +7,14 @@ SegmentManager::SegmentManager(BufferManager& bufferManager)
 
 }
 
+int file_allocate(int fd, off_t size) {
+#if __APPLE__
+	return ftruncate(fd, size);
+#else
+	return posix_fallocate(fd, 0, size);
+#endif
+}
+
 /*
  * Default Größe = 2 Page
  */
@@ -32,7 +40,7 @@ SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int si
     	//exception
     }
 
-    if(posix_fallocate(fileHandle, 0 , size * PAGE_SIZE) < 0)
+    if(file_allocate(fileHandle, size * PAGE_SIZE) < 0)
     {
     	//exception
     }
