@@ -4,6 +4,8 @@
 #include "Operator.h"
 #include <string>
 
+class Schema::Relation;
+
 namespace Operators
 {
 
@@ -19,8 +21,9 @@ public:
 	virtual void close();
 
 private:
+	Schema::Relation relation;
 	std::vector<Register*> output;
-
+	TID current;
 };
 
 } /* namespace Operator */
