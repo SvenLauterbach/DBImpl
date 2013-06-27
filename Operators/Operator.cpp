@@ -1,7 +1,7 @@
 
 #include "Operator.h"
 
-namespace Operators
+namespace Operator
 {
 
 Operator::Operator()

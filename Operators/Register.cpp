@@ -1,6 +1,6 @@
 #include "Register.h"
 
-namespace Operators
+namespace Operator
 {
 
 Register::Register()

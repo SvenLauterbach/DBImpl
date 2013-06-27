@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Operators
+namespace Operator
 {
 
 enum class register_type { undefined, Integer, String };

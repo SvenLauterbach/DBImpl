@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace Operators
+namespace Operator
 {
 
 class Register;
