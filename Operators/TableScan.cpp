@@ -3,7 +3,7 @@
 #include "../Parser/Schema.hpp"
 #include "Register.h"
 
-namespace Operators
+namespace Operator
 {
 
 TableScan::TableScan(std::string relation_name)
@@ -36,29 +36,26 @@ bool TableScan::next()
 	Record& record = segment.lookup(TID(currentPage, currentSlot));
 	// if it fails as there are no more records:
 	// return false
-	output.clear();
 	// maybe TODO: delete old registers?
 	void* pointer = record.getData();
+	int i = 0;
 	for ( auto field : relation.attributes ) {
-		Register* reg = new Register();
 		switch( field.type ) {
 		case Types::Tag::Integer: {
 			int intValue = *((int *)pointer);
-			reg->setInteger(intValue);
+			output[i]->setInteger(intValue);
 			break; }
 		case Types::Tag::Char: {
 			//std::string& string = new std::string((char*) pointer, field.len);
 			std::string string((char*) pointer, field.len);
-			reg->setString(string);
-			// Keine Ahnung wie das hier mit der Speicherverwaltung genau lŠuft,
-			// aber mich wŸrde es wundern wenn das wirklich funktioniert... --Andi
+			output[i]->setString(string);
 			break; }
 		default:
 			throw;
 		}
-		output.push_back(reg);
 
 		pointer += field.len;
+		i++;
 	}
 	// increment slot and page
 	currentSlot++;

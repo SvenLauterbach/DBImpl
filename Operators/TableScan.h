@@ -5,8 +5,11 @@
 #include "Operator.h"
 #include "../Parser/Schema.hpp"
 
-namespace Operators
+
+namespace Operator
 {
+
+class Register;
 
 class TableScan: public Operator
 {
