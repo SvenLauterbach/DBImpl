@@ -6,7 +6,7 @@ namespace Operator
 Register::Register()
 {
 	data = nullptr;
-	type = register_type::undefined;
+	type = RegisterType::undefined;
 }
 
 Register::~Register()
@@ -16,13 +16,13 @@ Register::~Register()
 
 int Register::getInteger()
 {
-	return  *(int *)data;
+	return *(int *)data;
 }
 
 void Register::setInteger(int i)
 {
 	data = &i;
-	type = register_type::Integer;
+	type = RegisterType::Integer;
 }
 
 const std::string& Register::getString()
@@ -33,7 +33,7 @@ const std::string& Register::getString()
 void Register::setString(const std::string& s)
 {
 	data = (void*) &s;
-	type = register_type::String;
+	type = RegisterType::String;
 }
 
 bool Register::operator <(Register& other)
@@ -41,9 +41,9 @@ bool Register::operator <(Register& other)
 	if ( type != other.type )
 		throw;
 	switch (type) {
-		case register_type::Integer:
+		case RegisterType::Integer:
 			return getInteger() < other.getInteger();
-		case register_type::String:
+		case RegisterType::String:
 			return getString() < other.getString();
 		default:
 			throw;
@@ -55,9 +55,9 @@ bool Register::operator ==(Register& other)
 	if ( type != other.type )
 		throw;
 	switch (type) {
-		case register_type::Integer:
+		case RegisterType::Integer:
 			return getInteger() == other.getInteger();
-		case register_type::String:
+		case RegisterType::String:
 			return getString() == other.getString();
 		default:
 			throw;
@@ -67,6 +67,8 @@ bool Register::operator ==(Register& other)
 int Register::getHashValue()
 {
 	// TODO implement
+	throw;
+	return 0;
 }
 
 } /* namespace Operator */

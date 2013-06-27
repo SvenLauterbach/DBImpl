@@ -6,7 +6,7 @@
 namespace Operator
 {
 
-enum class register_type { undefined, Integer, String };
+enum class RegisterType { undefined, Integer, String };
 
 class Register
 {
@@ -26,8 +26,13 @@ public:
 
 	int getHashValue();
 
+	RegisterType getType() const
+	{
+		return type;
+	}
+
 private:
-	register_type type;
+	RegisterType type;
 	void* data;
 };
 
