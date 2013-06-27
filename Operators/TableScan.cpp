@@ -13,11 +13,17 @@ TableScan::TableScan(std::string relation_name)
 	relation = schema.GetRelation(relation_name);
 	currentPage = 0;
 	currentSlot = 0;
+
+	for ( auto field : relation.attributes ) {
+		output.push_back(new Register());
+	}
 }
 
 TableScan::~TableScan()
 {
-	// TODO Auto-generated destructor stub
+	for ( Register* r : output ) {
+		delete r;
+	}
 }
 
 void TableScan::open()
@@ -25,7 +31,6 @@ void TableScan::open()
 	// initialize TID pointer to next element with page 0, slot 0
 	currentPage = 0;
 	currentSlot = 0;
-	output.clear();
 }
 
 bool TableScan::next()
@@ -54,6 +59,7 @@ bool TableScan::next()
 			throw;
 		}
 
+		// TODO how to disable this warning? --Andi
 		pointer += field.len;
 		i++;
 	}
@@ -74,7 +80,6 @@ std::vector<Register*> TableScan::getOutput()
 
 void TableScan::close()
 {
-	output.clear();
 	// maybe TODO delete registers?
 }
 
