@@ -6,7 +6,7 @@
 namespace Operators
 {
 
-enum class register_type { Integer, String };
+enum class register_type { undefined, Integer, String };
 
 class Register
 {
@@ -15,19 +15,11 @@ public:
 	Register();
 	virtual ~Register();
 
-	int getInteger() {
-		return  *(int *)data;
-	}
-	void setInteger(int i) {
-		data = &i;
-	}
+	int getInteger();
+	void setInteger(int i);
 
-	const std::string& getString() {
-		return (std::string&)data;
-	}
-	void setString(const std::string& s) {
-		data = (void*) &s;
-	}
+	const std::string& getString();
+	void setString(const std::string& s);
 
 	bool operator<(Register& other);
 	bool operator==(Register& other);

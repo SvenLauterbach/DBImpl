@@ -1,10 +1,9 @@
 #ifndef TABLESCAN_H_
 #define TABLESCAN_H_
 
-#include "Operator.h"
 #include <string>
-
-class Schema::Relation;
+#include "Operator.h"
+#include "../Parser/Schema.hpp"
 
 namespace Operators
 {
@@ -21,9 +20,10 @@ public:
 	virtual void close();
 
 private:
-	Schema::Relation relation;
+	Schema::Relation& relation;
 	std::vector<Register*> output;
-	TID current;
+	int currentPage;
+	int currentSlot;
 };
 
 } /* namespace Operator */
