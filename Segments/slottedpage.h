@@ -31,6 +31,7 @@ public:
 class SlottedPage
 {
 	SlottedPageHead header;
+	// TODO warum hat eine SlottedPage nur einen Slot? --Andi
 	SlottedPageSlot slots[1];
 };
 
