@@ -7,8 +7,8 @@ BufferFrame::BufferFrame()
 }
 
 
-BufferFrame::BufferFrame(int pageId)
-: pageId(pageId), data(malloc(PAGE_SIZE)), islocked(false)
+BufferFrame::BufferFrame(int pageId, int filehandle)
+: pageId(pageId), data(malloc(PAGE_SIZE)), islocked(false), filehandle(filehandle)
 {
     //frameLatch = (pthread_rwlock_t*) malloc(sizeof(pthread_rwlock_t));
     pthread_rwlock_init(&frameLatch, NULL);
@@ -23,6 +23,11 @@ BufferFrame::~BufferFrame()
 void* BufferFrame::getData()
 {
     return data.get();
+}
+
+int BufferFrame::getFileHandle()
+{
+	return filehandle;
 }
 
 int BufferFrame::getPageId()

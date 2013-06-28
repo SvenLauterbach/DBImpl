@@ -1,41 +1,72 @@
 #include "buffermanager.h"
 #include <string.h>
 
-BufferManager::BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const std::string& filename, unsigned size)
+BufferManager::BufferManager(const std::string& filename, unsigned size)
 : frameBuffer(), 
   nrPagesInBuffer(size), 
   bufferReplacement(), 
   pagesLoaded(0), 
   frameBufferLatch(),
-  nrPagesInFile(0)
+  nrPagesInFile(0),
+  openFiles(),
+  masterFile(filename)
 {
-    if((inputFile = open(filename.c_str(), O_CREAT | O_RDWR, S_IRUSR|S_IWUSR)) < 0)
-    {
-    	//Excpetion
-    }    
+	int inputFile;
+
+	inputFile = openFile(masterFile);
     
-    unsigned int fileSize = getFileSize();
+    unsigned int fileSize = getFileSize(inputFile);
     
     nrPagesInFile = fileSize / PAGE_SIZE;
     pthread_rwlock_init(&frameBufferLatch, NULL);
     frameBuffer.reserve(size);
 }
 
-unsigned int BufferManager::getFileSize()
+std::string& BufferManager::getMasterFile()
+{
+	return masterFile;
+}
+
+unsigned int BufferManager::getFileSize(int filehandle)
 {
 	struct stat filestatus;
-	fstat(inputFile, &filestatus);
+	fstat(filehandle, &filestatus);
 
 	return filestatus.st_size;
 }
 
-BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
+int BufferManager::openFile(std::string& filename)
+{
+	int filehandle = 0;
+
+	if(openFiles.find(filename) == openFiles.end())
+	{
+		if((filehandle = open(filename.c_str(), O_CREAT | O_RDWR, S_IRUSR|S_IWUSR)) < 0)
+		{
+			//Excpetion
+		}
+
+		openFiles.insert(std::make_pair(filename, filehandle));
+	}
+	else
+	{
+		std::unordered_map<std::string, int>::iterator it = openFiles.find(filename);
+
+		filehandle = it->second;
+	}
+
+	return filehandle;
+}
+
+BufferFrame& BufferManager::getPage(unsigned int pageId, std::string& filename, bool exclusive)
 {
 	/*
 	 * first we have to check if the requested pageId is already in our buffer,
 	 * but before we have to hold the lock for the pageBuffer hashtable, so no 
 	 * other thread can delete the page we are searching for. 
 	 */
+	int filehandle = openFile(filename);
+
 	lockPageBuffer(true);
 	
 	if(frameBuffer.find(pageId) != frameBuffer.end())
@@ -80,11 +111,18 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, bool exclusive)
 	    }
 
 	    //Create new BufferFrame in the pageBuffer
-	    std::unique_ptr<BufferFrame> frame = std::unique_ptr<BufferFrame>(new BufferFrame(pageId));
+	    std::unique_ptr<BufferFrame> frame = std::unique_ptr<BufferFrame>(new BufferFrame(pageId, filehandle));
 
-    	pread(inputFile, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
+    	int bytesReaded = pread(filehandle, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
 
-	    frame->lock(exclusive);
+    	//we reach end of file
+	    if(bytesReaded == -1 || bytesReaded == 0)
+	    {
+	    	BufferFrame frame(-1, -1);
+	    	return frame;
+	    }
+
+    	frame->lock(exclusive);
 
 	    frameBuffer[pageId] = std::move(frame);
 
@@ -106,7 +144,7 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty)
     //if page was modified (= is Dirty) then we should write it back to disk
     if(isDirty)
     {
-    	pwrite(inputFile, frame.getData(), PAGE_SIZE, frame.getPageId() * PAGE_SIZE);
+    	pwrite(frame.getFileHandle(), frame.getData(), PAGE_SIZE, frame.getPageId() * PAGE_SIZE);
     }
     
     frame.unlock();
@@ -120,7 +158,10 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty)
 BufferManager::~BufferManager()
 {
     pthread_rwlock_destroy(&frameBufferLatch);
-    close(inputFile);
+    for(auto filehandle : openFiles)
+    {
+    	close(filehandle.second);
+    }
 }
 
 

@@ -13,6 +13,7 @@ bool BufferManagerSimpleTest();
 bool BTreeNodeSimpleTest();
 bool SISegmentSimpleTest();
 bool test();
+bool BufferManagerPageNotFoundTest();
 
 int main(int argc, char** argv)
 {
@@ -43,8 +44,31 @@ int main(int argc, char** argv)
 		std::cout << "[failed] - SISegmentSimpleTest" << std::endl;
 	}
 
+	if(BufferManagerPageNotFoundTest())
+	{
+		std::cout << "[passed] - BufferManagerPageNotFoundTest" << std::endl;
+	}
+	else
+	{
+		std::cout << "[failed] - BufferManagerPageNotFoundTest" << std::endl;
+	}
 	main_segments(PAGE_SIZE);
+}
 
+bool BufferManagerPageNotFoundTest()
+{
+	BufferManager bm("data.db", 1024);
+
+	BufferFrame& frame = bm.getPage(1213213123, bm.getMasterFile(), true);
+
+	if(BufferFrame::IsInvalidFrame(frame))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool test()
@@ -58,14 +82,14 @@ bool test()
 		ints.push_back(i);
 	}
 
-	BufferFrame& frame = bm.getPage(3, true);
+	BufferFrame& frame = bm.getPage(3, bm.getMasterFile(), true);
 
 	//(*(frame.getData())) = ints;
 	memcpy(&ints, frame.getData(), sizeof(ints));
 
 	bm.unfixPage(frame, true);
 
-	BufferFrame& frame_test = bm.getPage(3, true);
+	BufferFrame& frame_test = bm.getPage(3, bm.getMasterFile(), true);
 
 	std::vector<int> ints_test;
 
@@ -156,7 +180,7 @@ bool SISegmentSimpleTest()
 
 	BufferManager bm("data.db", 1024);
 
-	BufferFrame& frame = bm.getPage(0, true);
+	BufferFrame& frame = bm.getPage(0, bm.getMasterFile(), true);
 
 	SISegment* sisegment = (SISegment*) frame.getData();
 
@@ -168,7 +192,7 @@ bool SISegmentSimpleTest()
 
 	bm.unfixPage(frame, true);
 
-	BufferFrame& frame_test = bm.getPage(0, true);
+	BufferFrame& frame_test = bm.getPage(0, bm.getMasterFile(), true);
 
 	SISegment* sisegment_test = static_cast<SISegment*>(frame_test.getData());
 
@@ -221,7 +245,7 @@ bool BufferManagerSimpleTest()
 {
 	BufferManager bm("data.db", 1024);
 
-	BufferFrame& frame = bm.getPage(1, true);
+	BufferFrame& frame = bm.getPage(1, bm.getMasterFile(), true);
 
 	int test[10];
 	int data[10];
@@ -239,7 +263,7 @@ bool BufferManagerSimpleTest()
 
 
 	//reopen page and load data from page
-	BufferFrame& testFrame = bm.getPage(1, true);
+	BufferFrame& testFrame = bm.getPage(1, bm.getMasterFile(), true);
 	memcpy(&data, frame.getData(), sizeof(data));
 
 	//compare data from testframe with generated test data

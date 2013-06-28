@@ -13,7 +13,7 @@ const Record& SPSegment::lookup(TID recordId)
 	/*
 	 * first we need to get the page from the bufferManager
 	 */
-	BufferFrame& frame = bufferManager.getPage(recordId.getPageId(), true);
+	BufferFrame& frame = bufferManager.getPage(recordId.getPageId(), infos.fileName, true);
 
 	/*
 	 * After retrieving the page we have */
@@ -38,7 +38,7 @@ TID SPSegment::insert(const Record& record)
 
     for(unsigned int i = 0; i <= infos.nrOfPages; i++)
     {
-    	BufferFrame& frame = bm.getPage(i, true);
+    	BufferFrame& frame = bm.getPage(i, infos.fileName, true);
 
     	SlottedPageHead* header = (SlottedPageHead*)frame.getData();
 
@@ -120,7 +120,7 @@ bool SPSegment::remove(TID recordId)
 	SegmentInformation infos = getSegmentInformation();
 	BufferManager& bm = getBufferManager();
 
-	BufferFrame& frame = bm.getPage(recordId.getPageId(), true);
+	BufferFrame& frame = bm.getPage(recordId.getPageId(), infos.fileName, true);
 	SlottedPageSlot* slot = getSlot(frame, recordId);
 
 	slot->isFree = true;
@@ -132,6 +132,7 @@ bool SPSegment::remove(TID recordId)
 
 bool SPSegment::update(TID recordId, const Record& record)
 {
+	SegmentInformation infos = getSegmentInformation();
 	/*
 	 * tidForUpdate holds the tid we want to update
 	 * (this can be the tid passed as a parameter or
@@ -145,7 +146,7 @@ bool SPSegment::update(TID recordId, const Record& record)
 	 * contains the actual data.
 	 */
 	BufferManager& bm = getBufferManager();
-	BufferFrame& frame = bm.getPage(recordId.getPageId(), true);
+	BufferFrame& frame = bm.getPage(recordId.getPageId(), infos.fileName, true);
 	SlottedPageSlot* slot = getSlot(frame, recordId);
 
 	TID possibleReference = isSlotReference(*slot);

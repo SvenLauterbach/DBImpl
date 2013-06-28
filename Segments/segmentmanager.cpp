@@ -15,7 +15,7 @@ SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int si
 	/*
 	 * we need the segment Inventory to register the created segment
 	 */
-	BufferFrame& frame = bufferManager.getPage(0, true);
+	BufferFrame& frame = bufferManager.getPage(0, bufferManager.getMasterFile(), true);
     SISegment* segmentInventory = static_cast<SISegment*>(frame.getData());
 
     SegmentInformation result = segmentInventory->CreateSegment(segmentType, size);
@@ -46,7 +46,7 @@ SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int si
 
 Segment& SegmentManager::getSegment(SegmentID id)
 {
-    BufferFrame& frame = bufferManager.getPage(0, false);
+    BufferFrame& frame = bufferManager.getPage(0, bufferManager.getMasterFile(), false);
     SISegment* segmentInventory = static_cast<SISegment*>(frame.getData());	
     bufferManager.unfixPage(frame, true);
     

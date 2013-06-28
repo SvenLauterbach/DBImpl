@@ -19,17 +19,20 @@ class BufferManager
 {
 
 public:
-    BufferManager(/*std::unique_ptr<DataSource> dataSource*/ const std::string& filename, unsigned size);
-    BufferFrame& getPage(unsigned pageId, bool exclusive);
+    BufferManager(const std::string& filename, unsigned size);
+    BufferFrame& getPage(unsigned pageId, std::string& filename, bool exclusive);
     void unfixPage(BufferFrame& frame, bool isDirty);
+    std::string& getMasterFile();
     ~BufferManager();
     
 private:
     std::unordered_map<uint64_t, std::unique_ptr<BufferFrame>> frameBuffer;
+    std::unordered_map<std::string, int> openFiles;
     BufferReplacementStrategy bufferReplacement;
     pthread_rwlock_t frameBufferLatch;
     
-    int inputFile;
+    //int inputFile;
+    std::string masterFile;
     unsigned int nrPagesInFile;
     unsigned int nrPagesInBuffer;
     unsigned int pagesLoaded;
@@ -52,7 +55,8 @@ private:
 	pthread_rwlock_unlock(&frameBufferLatch);
     }
     
-    unsigned int getFileSize();
+    unsigned int getFileSize(int filehandle);
+    int openFile(std::string& filename);
 
 };
 
