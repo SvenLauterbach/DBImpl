@@ -18,7 +18,7 @@ unsigned int BTreeSegment::insert(const BTreeNode<class T, class cmp>& node)
 	 */
 	unsigned int pageId = fsi.freePage();
 
-	BufferFrame& frame = bufferManager.getPage(pageId, info.fileName,true);
+	BufferFrame& frame = bufferManager.getPage(pageId, info.getFileName(),true);
 	memcpy(frame.getData(), &node, PAGE_SIZE);
 	bufferManager.unfixPage(frame, true);
 
@@ -40,7 +40,8 @@ const BTreeNode<class T, class cmp>&  BTreeSegment::lookup(TID tid)
 	SegmentInformation info = getSegmentInformation();
 	BufferManager& bufferManager = getBufferManager();
 
-	BufferFrame& frame = bufferManager.getPage(tid.getPageId(), info.fileName, true);
+
+	BufferFrame& frame = bufferManager.getPage(tid.getPageId(), info.getFileName(), true);
 
 	BTreeNode<class T, class cmp>* node = static_cast<BTreeNode<class T, class cmp>*>(frame.getData());
 
@@ -52,7 +53,7 @@ bool BTreeSegment::update(const BTreeNode<class T, class cmp>& node)
 	SegmentInformation info = getSegmentInformation();
 	BufferManager& bufferManager = getBufferManager();
 
-	BufferFrame& frame = bufferManager.getPage(0, info.fileName, true);
+	BufferFrame& frame = bufferManager.getPage(0, info.getFileName(), true);
 
 	//BÖSE!
 	memcpy(frame.getData(), &node, PAGE_SIZE);

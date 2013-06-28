@@ -13,7 +13,8 @@ const Record& SPSegment::lookup(TID recordId)
 	/*
 	 * first we need to get the page from the bufferManager
 	 */
-	BufferFrame& frame = bufferManager.getPage(recordId.getPageId(), infos.fileName, true);
+	std::string filename = infos.getFileName();
+	BufferFrame& frame = bufferManager.getPage(recordId.getPageId(), filename, true);
 
 	/*
 	 * After retrieving the page we have */
@@ -38,74 +39,82 @@ TID SPSegment::insert(const Record& record)
 
     for(unsigned int i = 0; i <= infos.nrOfPages; i++)
     {
-    	BufferFrame& frame = bm.getPage(i, infos.fileName, true);
+    	BufferFrame& frame = bm.getPage(i, infos.getFileName(), true);
 
     	SlottedPageHead* header = (SlottedPageHead*)frame.getData();
 
-    	/*
-    	 * calculate the free space
-    	 * ____________________________________
-    	 * |____________|                     |
-    	 * |            ^- freespace pointer  |
-    	 * |                                  |
-    	 * |                   _______________|
-    	 * |___________________|______________|
-    	 *                     ^-dataStart pointer
-    	 *
-    	 * If we subtract the freespace pointer from the dataStart pointer
-    	 * we get the space between those 2 pointers
-    	 */
-    	unsigned int freeSpace = (&(header->dataStart) - &(header->freeSpace));
-
-    	if(freeSpace > sizeof(SlottedPageSlot) + record.getLen())
+    	if(header->slotCount == 0)
     	{
-    		/*
-    		 * first we should move the dataStart Pointer. As you can see in
-    		 * image above the data grow backwards, this means the pointer
-    		 * should move to the left. To achieve this we have to subtract the
-    		 * records length from the current datastart address
-    		 */
-    		header->dataStart = (void*)(header->dataStart - record.getLen());
 
-    		/*
-    		 * copy the record data to the new free space
-    		 */
-    		memcpy(header->dataStart, record.getData(), record.getLen());
-
-    		/*
-    		 * create a Page Slot and then copy its content to the freeSpace Pointer
-    		 */
-    		SlottedPageSlot newSlot;
-    		newSlot.offset = header->dataStart;
-    		newSlot.length = record.getLen();
-    		newSlot.isFree = false;
-
-    		memcpy(header->freeSpace, &newSlot, sizeof(newSlot));
-
-    		/*
-    		 * finallay move the freeSpace pointer to the end of the slot we just inserted.
-    		 * The freespace pointer grows forward, so we have to add the length of the
-    		 * new slot.
-    		 */
-    		header->freeSpace = (void*) (header->freeSpace + sizeof(newSlot));
-
-    		/*
-    		 * increase slotcount
-    		 */
-    		header->slotCount++;
-
-    		/*
-    		 * after inserting the record write all changes back to disk
-    		 */
-    		bm.unfixPage(frame, true);
-
-    		TID result(i, header->slotCount);
-
-    		return result;
     	}
     	else
     	{
-    		bm.unfixPage(frame, false);
+
+			/*
+			 * calculate the free space
+			 * ____________________________________
+			 * |____________|                     |
+			 * |            ^- freespace pointer  |
+			 * |                                  |
+			 * |                   _______________|
+			 * |___________________|______________|
+			 *                     ^-dataStart pointer
+			 *
+			 * If we subtract the freespace pointer from the dataStart pointer
+			 * we get the space between those 2 pointers
+			 */
+			unsigned int freeSpace = (&(header->dataStart) - &(header->freeSpace));
+
+			if(freeSpace > sizeof(SlottedPageSlot) + record.getLen())
+			{
+				/*
+				 * first we should move the dataStart Pointer. As you can see in
+				 * image above the data grow backwards, this means the pointer
+				 * should move to the left. To achieve this we have to subtract the
+				 * records length from the current datastart address
+				 */
+				header->dataStart = (void*)(header->dataStart - record.getLen());
+
+				/*
+				 * copy the record data to the new free space
+				 */
+				memcpy(header->dataStart, record.getData(), record.getLen());
+
+				/*
+				 * create a Page Slot and then copy its content to the freeSpace Pointer
+				 */
+				SlottedPageSlot newSlot;
+				newSlot.offset = header->dataStart;
+				newSlot.length = record.getLen();
+				newSlot.isFree = false;
+
+				memcpy(header->freeSpace, &newSlot, sizeof(newSlot));
+
+				/*
+				 * finallay move the freeSpace pointer to the end of the slot we just inserted.
+				 * The freespace pointer grows forward, so we have to add the length of the
+				 * new slot.
+				 */
+				header->freeSpace = (void*) (header->freeSpace + sizeof(newSlot));
+
+				/*
+				 * increase slotcount
+				 */
+				header->slotCount++;
+
+				/*
+				 * after inserting the record write all changes back to disk
+				 */
+				bm.unfixPage(frame, true);
+
+				TID result(i, header->slotCount);
+
+				return result;
+			}
+			else
+			{
+				bm.unfixPage(frame, false);
+			}
     	}
     }
 
@@ -120,7 +129,7 @@ bool SPSegment::remove(TID recordId)
 	SegmentInformation infos = getSegmentInformation();
 	BufferManager& bm = getBufferManager();
 
-	BufferFrame& frame = bm.getPage(recordId.getPageId(), infos.fileName, true);
+	BufferFrame& frame = bm.getPage(recordId.getPageId(), infos.getFileName(), true);
 	SlottedPageSlot* slot = getSlot(frame, recordId);
 
 	slot->isFree = true;
@@ -146,7 +155,7 @@ bool SPSegment::update(TID recordId, const Record& record)
 	 * contains the actual data.
 	 */
 	BufferManager& bm = getBufferManager();
-	BufferFrame& frame = bm.getPage(recordId.getPageId(), infos.fileName, true);
+	BufferFrame& frame = bm.getPage(recordId.getPageId(), infos.getFileName(), true);
 	SlottedPageSlot* slot = getSlot(frame, recordId);
 
 	TID possibleReference = isSlotReference(*slot);

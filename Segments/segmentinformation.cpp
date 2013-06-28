@@ -1,7 +1,7 @@
 #include "segmentinformation.h"
 
-SegmentInformation::SegmentInformation(unsigned int id, SegmentType type, std::string fileName, unsigned int nrOfPages)
- : segmentId(id), type(type), fileName(fileName), nrOfPages(nrOfPages), freePages()
+SegmentInformation::SegmentInformation(unsigned int id, SegmentType type, unsigned int nrOfPages)
+ : segmentId(id), type(type), nrOfPages(nrOfPages), freePages()
 {
 
 }
@@ -10,8 +10,7 @@ SegmentInformation::SegmentInformation() {
 }
 
 SegmentInformation::SegmentInformation(const SegmentInformation& rhs)
-	: fileName(rhs.fileName),
-	  segmentId(rhs.segmentId),
+	: segmentId(rhs.segmentId),
 	  type(rhs.type),
 	  nrOfPages(rhs.nrOfPages),
 	  freePages(rhs.freePages)

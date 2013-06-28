@@ -15,12 +15,10 @@ SegmentInformation SISegment::CreateSegment(SegmentType type, unsigned int size)
 	 */
 	unsigned int id = segmentCount;
     
-    std::stringstream sstm;
-    sstm << "segment." << id << ".db";
+
 
     SegmentInformation newSegInfos(id,
 				    type,
-				    sstm.str(),
 				    size);
 
     memcpy((segments + id), &newSegInfos, sizeof(newSegInfos));

@@ -35,7 +35,7 @@ SegmentID SegmentManager::createSegment(SegmentType segmentType, unsigned int si
      */
     int fileHandle = 0;
 
-    if((fileHandle = open(result.fileName.c_str(), O_CREAT)) < 0)
+    if((fileHandle = open(result.getFileName().c_str(), O_CREAT)) < 0)
     {
     	//exception
     }

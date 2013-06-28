@@ -58,7 +58,7 @@ int BufferManager::openFile(std::string& filename)
 	return filehandle;
 }
 
-BufferFrame& BufferManager::getPage(unsigned int pageId, std::string& filename, bool exclusive)
+BufferFrame& BufferManager::getPage(unsigned int pageId, std::string filename, bool exclusive)
 {
 	/*
 	 * first we have to check if the requested pageId is already in our buffer,
@@ -67,15 +67,17 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, std::string& filename, 
 	 */
 	int filehandle = openFile(filename);
 
+	PageID pId(pageId, filehandle);
+
 	lockPageBuffer(true);
 	
-	if(frameBuffer.find(pageId) != frameBuffer.end())
+	if(frameBuffer.find(pId) != frameBuffer.end())
 	{
 	    /*
 	     * the frame is already in the buffer, so let get a reference to
 	     * this frame
 	     */
-	    std::unique_ptr<BufferFrame> &frame = frameBuffer[pageId];
+	    std::unique_ptr<BufferFrame> &frame = frameBuffer[pId];
   
 	    bufferReplacement.increment(pageId);
 
@@ -95,14 +97,16 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, std::string& filename, 
 			//not enough space, lets cleanup
 			uint64_t unusedPage = bufferReplacement.getUnusedPages();
 
-			BufferFrame& frame = *frameBuffer[unusedPage];
+			PageID pId(unusedPage, filehandle);
+
+			BufferFrame& frame = *frameBuffer[pId];
 			frame.unlock();
 			/*
 			 * before we remove the frame we have to get a write lock
 			 * on the pageBuffer
 			 */
 
-			frameBuffer.erase(unusedPage);
+			frameBuffer.erase(pId);
 
 
 			bufferReplacement.unregisterPage(unusedPage);
@@ -116,7 +120,7 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, std::string& filename, 
     	int bytesReaded = pread(filehandle, frame->getData(), PAGE_SIZE, pageId * PAGE_SIZE);
 
     	//we reach end of file
-	    if(bytesReaded == -1 || bytesReaded == 0)
+	    if(bytesReaded == -1)
 	    {
 	    	BufferFrame frame(-1, -1);
 	    	return frame;
@@ -124,14 +128,16 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, std::string& filename, 
 
     	frame->lock(exclusive);
 
-	    frameBuffer[pageId] = std::move(frame);
+    	PageID pId(pageId, filehandle);
+
+	    frameBuffer[pId] = std::move(frame);
 
 	    pagesLoaded++;
 	    
 	    //registerPage for BufferReplacement
 	    bufferReplacement.registerPage(pageId);
 	    
-	    std::unique_ptr<BufferFrame> &result = frameBuffer[pageId];
+	    std::unique_ptr<BufferFrame> &result = frameBuffer[pId];
 	    unlockPageBuffer();
 	    return *result;
 	}

@@ -15,18 +15,55 @@
 #include "bufferreplacementstrategy.h"
 #include "../IO/datasource.h"
 
+class PageID
+{
+public:
+	PageID(uint64_t pageId, int filehandle) : pageId(pageId), filehandle(filehandle) {}
+	uint64_t pageId;
+	int filehandle;
+
+	bool operator==(const PageID &other) const
+	{
+		return (pageId == other.pageId && filehandle == other.filehandle);
+	}
+
+	bool operator!=(const PageID &other) const
+	{
+		return (pageId != other.pageId || filehandle != other.filehandle);
+	}
+};
+
+struct PageIDHash
+{
+	std::size_t operator()(const PageID& k) const
+	{
+	  using std::size_t;
+	  using std::hash;
+
+	  // Compute individual hash values for first,
+	  // second and third and combine them using XOR
+	  // and bit shifting:
+
+	  uint64_t pageId = k.pageId;
+	  int filehandle = k.filehandle;
+
+	  return ((hash<unsigned int>()(pageId) ^ (hash<unsigned int>()(filehandle) << 1)) >> 1);
+	}
+};
+
 class BufferManager
 {
 
 public:
     BufferManager(const std::string& filename, unsigned size);
-    BufferFrame& getPage(unsigned pageId, std::string& filename, bool exclusive);
+    BufferFrame& getPage(unsigned pageId, std::string filename, bool exclusive);
     void unfixPage(BufferFrame& frame, bool isDirty);
     std::string& getMasterFile();
+
     ~BufferManager();
     
 private:
-    std::unordered_map<uint64_t, std::unique_ptr<BufferFrame>> frameBuffer;
+    std::unordered_map<PageID, std::unique_ptr<BufferFrame>, PageIDHash> frameBuffer;
     std::unordered_map<std::string, int> openFiles;
     BufferReplacementStrategy bufferReplacement;
     pthread_rwlock_t frameBufferLatch;

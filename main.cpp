@@ -171,7 +171,7 @@ bool SISegmentSimpleTest()
 	 */
 	auto f = [](SegmentInformation s1, SegmentInformation s2) -> bool
 		         {
-					return (s1.fileName.compare(s2.fileName) == 0 &&
+					return (s1.getFileName().compare(s2.getFileName()) == 0 &&
 						   s1.nrOfPages == s2.nrOfPages &&
 						   s1.segmentId == s2.segmentId &&
 						   s1.type == s2.type);
@@ -245,7 +245,12 @@ bool BufferManagerSimpleTest()
 {
 	BufferManager bm("data.db", 1024);
 
-	BufferFrame& frame = bm.getPage(1, bm.getMasterFile(), true);
+	BufferFrame& frame = bm.getPage(0, bm.getMasterFile(), true);
+
+	if(BufferFrame::IsInvalidFrame(frame))
+	{
+		return false;
+	}
 
 	int test[10];
 	int data[10];
@@ -263,7 +268,12 @@ bool BufferManagerSimpleTest()
 
 
 	//reopen page and load data from page
-	BufferFrame& testFrame = bm.getPage(1, bm.getMasterFile(), true);
+	BufferFrame& testFrame = bm.getPage(0, bm.getMasterFile(), true);
+
+	if(BufferFrame::IsInvalidFrame(testFrame))
+	{
+		return false;
+	}
 	memcpy(&data, frame.getData(), sizeof(data));
 
 	//compare data from testframe with generated test data
