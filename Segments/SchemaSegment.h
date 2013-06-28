@@ -22,6 +22,7 @@ public:
 	SchemaSegment(SegmentInformation info, BufferManager& bm);
 	virtual ~SchemaSegment();
 
+	// TODO: change first char to lower case
 	void AddRelation(Schema::Relation r);
 	Schema::Relation GetRelation(std::string& name);
 	void DeleteRelation(Schema::Relation r);
