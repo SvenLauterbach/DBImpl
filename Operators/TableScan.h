@@ -4,6 +4,7 @@
 #include <string>
 #include "Operator.h"
 #include "../Parser/Schema.hpp"
+#include "../Segments/spsegment.h"
 
 
 namespace Operator
@@ -14,7 +15,7 @@ class Register;
 class TableScan: public Operator
 {
 public:
-	TableScan(std::string relation);
+	TableScan(SPSegment& segment, Schema::Relation relation);
 	virtual ~TableScan();
 
 	virtual void open();
@@ -24,6 +25,7 @@ public:
 
 private:
 	Schema::Relation& relation;
+	SPSegment segment;
 	std::vector<Register*> output;
 	int currentPage;
 	int currentSlot;

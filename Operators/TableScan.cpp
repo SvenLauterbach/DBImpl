@@ -6,11 +6,10 @@
 namespace Operator
 {
 
-TableScan::TableScan(std::string relation_name)
+TableScan::TableScan(SPSegment& segment, Schema::Relation relation) : relation(relation), segment(segment)
 {
-	SchemaSegment& schema = SchemaSegment::getInstance();
 	// TODO? replace with reference?
-	relation = schema.GetRelation(relation_name);
+	//relation = schema.GetRelation(relation_name);
 	currentPage = 0;
 	currentSlot = 0;
 
@@ -37,12 +36,11 @@ bool TableScan::next()
 {
 	// TODO implement comments
 	// get record from segment and save to output variable
-	SPSegment& segment = relation.getSegment();
-	Record& record = segment.lookup(TID(currentPage, currentSlot));
+	const Record& record = segment.lookup(TID(currentPage, currentSlot));
 	// if it fails as there are no more records:
 	// return false
 	// maybe TODO: delete old registers?
-	void* pointer = record.getData();
+	const void* pointer = record.getData();
 	int i = 0;
 	for ( auto field : relation.attributes ) {
 		switch( field.type ) {

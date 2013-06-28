@@ -4,7 +4,7 @@
 
 using plan::Plan;
 
-int main(int argc, char* argv[]) {
+int main_plan(int argc, char* argv[]) {
    if (argc != 2)
       return -1;
    Plan p;
