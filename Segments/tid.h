@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <functional>
 #include <climits>
+#include <limits>
 
 class TID
 {
@@ -19,6 +20,17 @@ public:
     {
     	TID o = other;
     	return (pageId == o.getPageId() && slotId == o.getSlotId());
+    }
+
+    bool operator!=(const TID &other) const
+	{
+    	TID o = other;
+    	return (pageId != o.getPageId() || slotId != o.getSlotId());
+	}
+
+    const static TID NULLTID()
+    {
+    	return TID(std::numeric_limits<unsigned int>().max(),std::numeric_limits<unsigned int>().max());
     }
 
 private:

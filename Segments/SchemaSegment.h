@@ -12,10 +12,14 @@
 #include "../Parser/Schema.hpp"
 #include "../Parser/Types.hpp"
 #include "../Segments/tid.h"
+#include "../Segments/record.hpp"
+#include "../Segments/spsegment.h"
+#include "segmentinformation.h"
+#include "../BufferManager/buffermanager.h"
 
-class SchemaSegment {
+class SchemaSegment : public SPSegment {
 public:
-	SchemaSegment();
+	SchemaSegment(SegmentInformation info, BufferManager& bm);
 	virtual ~SchemaSegment();
 
 	void AddRelation(Schema::Relation r);

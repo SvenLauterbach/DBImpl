@@ -15,10 +15,11 @@ public:
     SegmentInformation CreateSegment(SegmentType type, unsigned int size);
     SegmentInformation GetSegment(unsigned int id);
     void Grow(unsigned int id, unsigned int size);
-    unsigned int Size() { return segments.size(); }
+    unsigned int Size() { return segmentCount; }
     
 private:
-    std::vector<SegmentInformation> segments;
+    int segmentCount;
+    SegmentInformation segments[1];
 };
 
 #endif // SISEGMENT_H

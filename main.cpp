@@ -16,7 +16,6 @@ bool test();
 
 int main(int argc, char** argv)
 {
-
 	if(BufferManagerSimpleTest() == true)
 	{
 		std::cout << "[passed] - BufferManagerSimpleTest" << std::endl;
@@ -35,12 +34,6 @@ int main(int argc, char** argv)
 		std::cout << "[failed] - BTreeNodeSimpleTest" << std::endl;
 	}
 
-	/*
-
-	Segmentation fault
-
-
-
 	if(SISegmentSimpleTest() == true)
 	{
 		std::cout << "[passed] - SISegmentSimpleTest" << std::endl;
@@ -48,9 +41,9 @@ int main(int argc, char** argv)
 	else
 	{
 		std::cout << "[failed] - SISegmentSimpleTest" << std::endl;
-	}*/
+	}
 
-	std::cout << test();
+	main_segments(PAGE_SIZE);
 
 }
 
@@ -94,6 +87,7 @@ bool SchemaSegmentSimpleTest()
 {
 	BufferManager bm("data.db", 1024);
 
+	/*
 	SchemaSegment segment;
 
 	Parser p("");
@@ -105,6 +99,7 @@ bool SchemaSegmentSimpleTest()
 	{
 		//segment.AddRelation(relation);
 	}
+	*/
 }
 
 bool SPSegmentSimpleTest()
@@ -164,11 +159,6 @@ bool SISegmentSimpleTest()
 	BufferFrame& frame = bm.getPage(0, true);
 
 	SISegment* sisegment = (SISegment*) frame.getData();
-
-	if(sisegment->Size() > 0)
-	{
-		std::cout << sisegment->Size() << std::endl;
-	}
 
 	SegmentInformation id1 = sisegment->CreateSegment(SegmentType::BT, 1);
 	SegmentInformation id2 = sisegment->CreateSegment(SegmentType::SP, 2);

@@ -18,7 +18,9 @@ public:
     bool update(TID recordId, const Record& record);
 
 private:
+    void createTIDReferenceSlot(SlottedPageSlot& slot, TID tid);
     SlottedPageSlot* getSlot(BufferFrame& frame, TID recordId);
+    TID isSlotReference(SlottedPageSlot slot);
 };
 
 #endif // SPSEGMENT_H

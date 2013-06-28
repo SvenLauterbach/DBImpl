@@ -6,6 +6,9 @@ SegmentInformation::SegmentInformation(unsigned int id, SegmentType type, std::s
 
 }
 
+SegmentInformation::SegmentInformation() {
+}
+
 SegmentInformation::SegmentInformation(const SegmentInformation& rhs)
 	: fileName(rhs.fileName),
 	  segmentId(rhs.segmentId),

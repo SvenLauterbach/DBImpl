@@ -29,18 +29,7 @@ const Record& SPSegment::lookup(TID recordId)
 	return *record;
 }
 
-SlottedPageSlot* SPSegment::getSlot(BufferFrame& frame, TID recordId)
-{
-	/* Getting the address of the slot is quite simple, just add the fixed size
-	 * header and n size of the slots, where n is the slot id we want
-	 * to access.
-	 *
-	 * _______________________________________________________________________
-	 * | fixed size header | slot | slot | ... | slot |
-	 * |                   ^- pointer to the first slot
-	 */
-	return (SlottedPageSlot*)(frame.getData() + sizeof(SlottedPageHead) + (recordId.getSlotId() * sizeof(SlottedPageHead)));
-}
+
 
 TID SPSegment::insert(const Record& record)
 {
@@ -94,7 +83,7 @@ TID SPSegment::insert(const Record& record)
     		memcpy(header->freeSpace, &newSlot, sizeof(newSlot));
 
     		/*
-    		 * finallay move the freeSpace pointer to the end o the slot we just inserted.
+    		 * finallay move the freeSpace pointer to the end of the slot we just inserted.
     		 * The freespace pointer grows forward, so we have to add the length of the
     		 * new slot.
     		 */
@@ -132,7 +121,6 @@ bool SPSegment::remove(TID recordId)
 	BufferManager& bm = getBufferManager();
 
 	BufferFrame& frame = bm.getPage(recordId.getPageId(), true);
-
 	SlottedPageSlot* slot = getSlot(frame, recordId);
 
 	slot->isFree = true;
@@ -144,6 +132,111 @@ bool SPSegment::remove(TID recordId)
 
 bool SPSegment::update(TID recordId, const Record& record)
 {
+	/*
+	 * tidForUpdate holds the tid we want to update
+	 * (this can be the tid passed as a parameter or
+	 * a reference).
+	 */
+	TID tidForUpdate = recordId;
 
+	/*
+	 * 1. We have to lookup the referenced slot and check
+	 * if this slot reference another slot or if it
+	 * contains the actual data.
+	 */
+	BufferManager& bm = getBufferManager();
+	BufferFrame& frame = bm.getPage(recordId.getPageId(), true);
+	SlottedPageSlot* slot = getSlot(frame, recordId);
+
+	TID possibleReference = isSlotReference(*slot);
+
+	if(possibleReference != TID::NULLTID())
+	{
+		//ok, its a reference to another slot
+		tidForUpdate = possibleReference;
+	}
+
+	const Record& currentRecord = lookup(tidForUpdate);
+
+	/*
+	 * if the updated record is smaller or equal
+	 * than the old one, we can make an in-place update
+	 */
+	if(currentRecord.getLen() >= record.getLen())
+	{
+		Record p(currentRecord.getLen(), record.getData());
+
+		memcpy(&p, &currentRecord, sizeof(p));
+		slot->length = currentRecord.getLen();
+	}
+	else
+	{
+		/*
+		 * the new data is larger than the old data, so
+		 * we have to create a new record. This new Record
+		 * should be referenced. But first we have to check
+		 * if the record is already referenced:
+		 *
+		 * slot -> references other TID -> slot with actual data
+		 */
+		if(possibleReference == TID::NULLTID())
+		{
+			/*
+			 * the record is not referenced.
+			 */
+			TID newTid = insert(record);
+			createTIDReferenceSlot(*slot, newTid);
+		}
+		else
+		{
+			/*
+			 * The slot is already a reference to another slot,
+			 * we have to delete the "old" reference and create
+			 * a new reference to the updated record, which we just
+			 * insert somewhere else.
+			 */
+			this->remove(possibleReference);
+
+			TID newTid = insert(record);
+			createTIDReferenceSlot(*slot, newTid);
+		}
+	}
+}
+
+SlottedPageSlot* SPSegment::getSlot(BufferFrame& frame, TID recordId)
+{
+
+	/* Getting the address of the slot is quite simple, just add the fixed size
+	 * header and n size of the slots, where n is the slot id we want
+	 * to access.
+	 *
+	 * _______________________________________________________________________
+	 * | fixed size header | slot | slot | ... | slot |
+	 * |                   ^- pointer to the first slot
+	 */
+	return (SlottedPageSlot*)(frame.getData() + sizeof(SlottedPageHead) + (recordId.getSlotId() * sizeof(SlottedPageHead)));
+}
+
+TID SPSegment::isSlotReference(SlottedPageSlot slot)
+{
+	long long magicBytes = std::numeric_limits<long long>().max();
+	long long magicBytesBuffer;
+	TID tid = TID::NULLTID();
+
+	memcpy(&magicBytesBuffer, &slot, 8);
+
+	if(magicBytes == magicBytesBuffer)
+	{
+		memcpy(&tid, (&slot + 8), 8);
+	}
+
+	return tid;
+}
+
+void SPSegment::createTIDReferenceSlot(SlottedPageSlot& slot, TID tid)
+{
+	long long magicByte = std::numeric_limits<long long>().max();
+	memcpy(&slot, &magicByte, sizeof(long long));
+	memcpy((&slot + sizeof(long long)), &tid, sizeof(long long));
 }
 

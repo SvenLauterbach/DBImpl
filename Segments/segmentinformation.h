@@ -10,6 +10,7 @@ struct SegmentInformation
 {
 
 public:
+	SegmentInformation();
     SegmentInformation(unsigned int id, SegmentType type, std::string fileName, unsigned int nrOfPages);
     SegmentInformation(const SegmentInformation& rhs);
 

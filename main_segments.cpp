@@ -47,13 +47,10 @@ class Random64 {
 /**
  * Test case for non-growing segments
  */
-int main_segments(int argc, char** argv) {
+int main_segments(unsigned int pagesize) {
    // Check arguments
-   if (argc != 2) {
-      cerr << "usage: " << argv[0] << " <pageSize>" << endl;
-      return -1;
-   }
-   const unsigned pageSize = atoi(argv[1]);
+
+   const unsigned pageSize = pagesize;
 
    // Bookkeeping
    unordered_map<TID, unsigned, TIDhash> values; // TID -> testData entry

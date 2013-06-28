@@ -6,6 +6,6 @@
 
 uint64_t extractPage(TID tid);
 class Random64;
-int main_segments(int argc, char** argv);
+int main_segments(unsigned int pagesize);
 
 #endif

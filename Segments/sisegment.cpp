@@ -1,6 +1,6 @@
 #include "sisegment.h"
 
-SISegment::SISegment() : segments()
+SISegment::SISegment() : segmentCount(0)
 {
 }
 
@@ -13,14 +13,7 @@ SegmentInformation SISegment::CreateSegment(SegmentType type, unsigned int size)
 	 * of the last segment
 	 *
 	 */
-	unsigned int id = 0;
-
-	if(segments.size() != 0)
-	{
-		std::vector<SegmentInformation>::reverse_iterator it = segments.rbegin();
-		SegmentInformation s = (*it);
-		id = s.segmentId + 1;
-	}
+	unsigned int id = segmentCount;
     
     std::stringstream sstm;
     sstm << "segment." << id << ".db";
@@ -30,14 +23,15 @@ SegmentInformation SISegment::CreateSegment(SegmentType type, unsigned int size)
 				    sstm.str(),
 				    size);
 
-    segments.insert(segments.begin() + id, newSegInfos);
+    memcpy((segments + id), &newSegInfos, sizeof(newSegInfos));
     
+    segmentCount++;
+
     return newSegInfos;
 }
 
 SegmentInformation SISegment::GetSegment(unsigned int id)
 {
-
     SegmentInformation newSegInfos = segments[id];
     
     return newSegInfos;
