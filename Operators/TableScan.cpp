@@ -8,8 +8,6 @@ namespace Operator
 
 TableScan::TableScan(SPSegment& segment, Schema::Relation relation) : relation(relation), segment(segment)
 {
-	// TODO? replace with reference?
-	//relation = schema.GetRelation(relation_name);
 	currentPage = 0;
 	currentSlot = 0;
 
