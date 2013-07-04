@@ -24,6 +24,7 @@ void SchemaSegment::AddRelation(Schema::Relation r)
 
 Schema::Relation SchemaSegment::GetRelation(std::string& name)
 {
+
 }
 
 void SchemaSegment::DeleteRelation(Schema::Relation r)

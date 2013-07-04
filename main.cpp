@@ -14,9 +14,21 @@ bool BTreeNodeSimpleTest();
 bool SISegmentSimpleTest();
 bool test();
 bool BufferManagerPageNotFoundTest();
+bool CreateSlotReferenceTest();
 
 int main(int argc, char** argv)
 {
+	main_segments(PAGE_SIZE);
+
+	if(CreateSlotReferenceTest() == true)
+	{
+		std::cout << "[passed] - CreateSlotReferenceTests" << std::endl;
+	}
+	else
+	{
+		std::cout << "[failed] - CreateSlotReferenceTest" << std::endl;
+	}
+
 	if(BufferManagerSimpleTest() == true)
 	{
 		std::cout << "[passed] - BufferManagerSimpleTest" << std::endl;
@@ -52,7 +64,48 @@ int main(int argc, char** argv)
 	{
 		std::cout << "[failed] - BufferManagerPageNotFoundTest" << std::endl;
 	}
-	main_segments(PAGE_SIZE);
+}
+
+bool CreateSlotReferenceTest()
+{
+	bool result1 = false;
+	bool result2 = false;
+
+	SlottedPageSlot slot;
+
+	TID tid(42,32);
+	SPSegment::createTIDReferenceSlot(slot, tid);
+
+	TID tidtest = SPSegment::isSlotReference(slot);
+
+	if(tidtest != TID::NULLTID() && tid == tidtest)
+	{
+		result1 = true;
+	}
+	else
+	{
+		result1 = false;
+	}
+
+
+	SlottedPageSlot slot2;
+
+	slot2.isFree = false;
+	slot2.length = 22;
+	slot2.offset = &slot;
+
+	TID tidtest2 = SPSegment::isSlotReference(slot2);
+
+	if(tidtest2 == TID::NULLTID())
+	{
+		result2 = true;
+	}
+	else
+	{
+		result2 = false;
+	}
+
+	return result1 && result2;
 }
 
 bool BufferManagerPageNotFoundTest()

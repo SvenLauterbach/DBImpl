@@ -30,8 +30,6 @@ const Record& SPSegment::lookup(TID recordId)
 	return *record;
 }
 
-
-
 TID SPSegment::insert(const Record& record)
 {
     SegmentInformation infos = getSegmentInformation();
@@ -41,87 +39,132 @@ TID SPSegment::insert(const Record& record)
     {
     	BufferFrame& frame = bm.getPage(i, infos.getFileName(), true);
 
-    	SlottedPageHead* header = (SlottedPageHead*)frame.getData();
+    	SlottedPage* page = (SlottedPage*)frame.getData();
 
-    	if(header->slotCount == 0)
+    	/*
+    	 * if this page doesn't contain any slot we have to initliaze the pointer
+    	 */
+    	if(page->header.slotCount == 0)
     	{
-
+    		std::cout << "Initializing new slotted page: " << i << std::endl;
+    		InitializePage(page);
     	}
-    	else
-    	{
+
+		/*
+		 * calculate the free space
+		 *
+		 * Page-Layout:
+		 * ____________________________________
+		 * |______|______|                     |
+		 * |            ^- freespace pointer  |
+		 * |                                  |
+		 * |                   _______________|
+		 * |___________________|______________|
+		 *                     ^-dataStart pointer
+		 *
+		 * If we subtract the freespace pointer from the dataStart pointer
+		 * we get the space between those 2 pointers
+		 */
+    	unsigned int freeSpace = getFreeSpace(page);
+
+		if(freeSpace > sizeof(SlottedPageSlot) + record.getLen())
+		{
+			std::cout << "free space in " << i << " before insert: " << freeSpace << " Bytes" << std::endl;
+			std::cout << "insert new record of size " << record.getLen() << " to page " << i << std::endl;
+			/*
+			 * first we should move the dataStart Pointer. As you can see in
+			 * image above the data grow backwards, this means the pointer
+			 * should move to the left. To achieve this we have to subtract the
+			 * records length from the current datastart address
+			 */
+			page->header.dataStart = (void*)(page->header.dataStart - record.getLen());
 
 			/*
-			 * calculate the free space
-			 * ____________________________________
-			 * |____________|                     |
-			 * |            ^- freespace pointer  |
-			 * |                                  |
-			 * |                   _______________|
-			 * |___________________|______________|
-			 *                     ^-dataStart pointer
-			 *
-			 * If we subtract the freespace pointer from the dataStart pointer
-			 * we get the space between those 2 pointers
+			 * copy the record data to the new free space
 			 */
-			unsigned int freeSpace = (&(header->dataStart) - &(header->freeSpace));
+			memcpy(page->header.dataStart, record.getData(), record.getLen());
 
-			if(freeSpace > sizeof(SlottedPageSlot) + record.getLen())
-			{
-				/*
-				 * first we should move the dataStart Pointer. As you can see in
-				 * image above the data grow backwards, this means the pointer
-				 * should move to the left. To achieve this we have to subtract the
-				 * records length from the current datastart address
-				 */
-				header->dataStart = (void*)(header->dataStart - record.getLen());
+			/*
+			 * create a Page Slot and then copy its content to the freeSpace Pointer
+			 */
+			SlottedPageSlot newSlot;
+			newSlot.offset = page->header.dataStart;
+			newSlot.length = record.getLen();
+			newSlot.isFree = false;
 
-				/*
-				 * copy the record data to the new free space
-				 */
-				memcpy(header->dataStart, record.getData(), record.getLen());
+			memcpy(page->header.freeSpace, &newSlot, sizeof(newSlot));
 
-				/*
-				 * create a Page Slot and then copy its content to the freeSpace Pointer
-				 */
-				SlottedPageSlot newSlot;
-				newSlot.offset = header->dataStart;
-				newSlot.length = record.getLen();
-				newSlot.isFree = false;
+			/*
+			 * finallay move the freeSpace pointer to the end of the slot we just inserted.
+			 * The freespace pointer grows forward, so we have to add the length of the
+			 * new slot.
+			 */
+			page->header.freeSpace = (void*) (page->header.freeSpace + sizeof(newSlot));
 
-				memcpy(header->freeSpace, &newSlot, sizeof(newSlot));
+			TID result(i, page->header.slotCount);
 
-				/*
-				 * finallay move the freeSpace pointer to the end of the slot we just inserted.
-				 * The freespace pointer grows forward, so we have to add the length of the
-				 * new slot.
-				 */
-				header->freeSpace = (void*) (header->freeSpace + sizeof(newSlot));
+			/*
+			 * increase slotcount (captain obvious)
+			 */
+			page->header.slotCount++;
 
-				/*
-				 * increase slotcount
-				 */
-				header->slotCount++;
+			page->header.avaiablefreeSpace -= record.getLen() + sizeof(newSlot);
 
-				/*
-				 * after inserting the record write all changes back to disk
-				 */
-				bm.unfixPage(frame, true);
+			/*
+			 * after inserting the record write all changes back to disk
+			 */
+			bm.unfixPage(frame, true);
 
-				TID result(i, header->slotCount);
+			std::cout << "returning TID(" << result.getPageId() << ", " << result.getSlotId() << ")" << std::endl;
 
-				return result;
-			}
-			else
-			{
-				bm.unfixPage(frame, false);
-			}
-    	}
+			return result;
+		}
+		else
+		{
+			bm.unfixPage(frame, false);
+		}
     }
 
     /*
      * If we reach this lines the for loop couln't find some page with enough freespace,
      */
     return TID(0,0);
+}
+
+void SPSegment::Compact(SlottedPage* page)
+{
+	unsigned int freeSpace = getFreeSpace(page);
+
+	if(freeSpace <= (page->header.avaiablefreeSpace / 100) * 20)
+	{
+		SlottedPage* newPage = static_cast<SlottedPage*>(malloc(PAGE_SIZE));
+
+		InitializePage(newPage);
+
+		memcpy(newPage, &(page->header), sizeof(SlottedPageHead));
+
+		for(int i = 0; i <= page->header.slotCount; i++)
+		{
+			if(!page->slots[i].isFree)
+			{
+				newPage->slots[i] = page->slots[i];
+				//memcpy()
+			}
+		}
+	}
+}
+
+void SPSegment::InitializePage(SlottedPage* page)
+{
+	page->header.dataStart = ((char*)page + PAGE_SIZE);
+	page->header.freeSpace = ((char*)page + sizeof(SlottedPageHead));
+	page->header.avaiablefreeSpace = PAGE_SIZE - sizeof(SlottedPageHead);
+}
+
+unsigned int SPSegment::getFreeSpace(SlottedPage* page)
+{
+	unsigned int freeSpace = (char*)page->header.dataStart - (char*)page->header.freeSpace;
+	return freeSpace;
 }
 
 bool SPSegment::remove(TID recordId)
@@ -133,6 +176,10 @@ bool SPSegment::remove(TID recordId)
 	SlottedPageSlot* slot = getSlot(frame, recordId);
 
 	slot->isFree = true;
+
+	SlottedPage* page = (SlottedPage*)frame.getData();
+
+	page->header.avaiablefreeSpace += slot->length;
 
 	bm.unfixPage(frame, true);
 
@@ -147,7 +194,7 @@ bool SPSegment::update(TID recordId, const Record& record)
 	 * (this can be the tid passed as a parameter or
 	 * a reference).
 	 */
-	TID tidForUpdate = recordId;
+	bool isReferenced = false;
 
 	/*
 	 * 1. We have to lookup the referenced slot and check
@@ -156,48 +203,31 @@ bool SPSegment::update(TID recordId, const Record& record)
 	 */
 	BufferManager& bm = getBufferManager();
 	BufferFrame& frame = bm.getPage(recordId.getPageId(), infos.getFileName(), true);
+
+
+	SlottedPage* page = static_cast<SlottedPage*>(frame.getData());
 	SlottedPageSlot* slot = getSlot(frame, recordId);
+	SlottedPageSlot* referencedSlot = nullptr;
 
 	TID possibleReference = isSlotReference(*slot);
 
-	if(possibleReference != TID::NULLTID())
+	if(slot->length >= record.getLen() && possibleReference == TID::NULLTID())
 	{
-		//ok, its a reference to another slot
-		tidForUpdate = possibleReference;
-	}
+		//In-Place update
+		page->header.avaiablefreeSpace += (slot->length - record.getLen());
 
-	const Record& currentRecord = lookup(tidForUpdate);
-
-	/*
-	 * if the updated record is smaller or equal
-	 * than the old one, we can make an in-place update
-	 */
-	if(currentRecord.getLen() >= record.getLen())
-	{
+		const Record& currentRecord = this->lookup(recordId);
 		Record p(currentRecord.getLen(), record.getData());
 
-		memcpy(&p, &currentRecord, sizeof(p));
+		memcpy(slot->offset, p.getData(), p.getLen());
 		slot->length = currentRecord.getLen();
 	}
 	else
 	{
-		/*
-		 * the new data is larger than the old data, so
-		 * we have to create a new record. This new Record
-		 * should be referenced. But first we have to check
-		 * if the record is already referenced:
-		 *
-		 * slot -> references other TID -> slot with actual data
-		 */
-		if(possibleReference == TID::NULLTID())
-		{
-			/*
-			 * the record is not referenced.
-			 */
-			TID newTid = insert(record);
-			createTIDReferenceSlot(*slot, newTid);
-		}
-		else
+		page->header.avaiablefreeSpace += slot->length;
+
+		//check if this is an already referenced slot
+		if(possibleReference != TID::NULLTID())
 		{
 			/*
 			 * The slot is already a reference to another slot,
@@ -210,7 +240,64 @@ bool SPSegment::update(TID recordId, const Record& record)
 			TID newTid = insert(record);
 			createTIDReferenceSlot(*slot, newTid);
 		}
+		else
+		{
+			/*
+			 * the record is not referenced.
+			 */
+			TID newTid = insert(record);
+			createTIDReferenceSlot(*slot, newTid);
+		}
 	}
+
+	/*
+	const Record& currentRecord = lookup(recordId);
+
+
+
+
+
+	if(possibleReference != TID::NULLTID())
+	{
+		//ok, its a reference to another slot
+		//tidForUpdate = possibleReference;
+		//referencedSlot = getSlot(frame, recordId);
+		isReferenced = true;
+	}
+
+
+	/*
+	 * if the updated record is smaller or equal
+	 * than the old one, we can make an in-place update
+	 */
+	/*
+	if(currentRecord.getLen() >= record.getLen())
+	{
+		Record p(currentRecord.getLen(), record.getData());
+
+		memcpy(slot->offset, p.getData(), p.getLen());
+		slot->length = currentRecord.getLen();
+	}
+	else
+	{
+		/*
+		 * the new data is larger than the old data, so
+		 * we have to create a new record. This new Record
+		 * should be referenced. But first we have to check
+		 * if the record is already referenced:
+		 *
+		 * slot -> references other TID -> slot with actual data
+		 */
+	/*
+		if(possibleReference == TID::NULLTID())
+		{
+
+		}
+		else
+		{
+
+		}
+	}*/
 }
 
 SlottedPageSlot* SPSegment::getSlot(BufferFrame& frame, TID recordId)
@@ -224,7 +311,10 @@ SlottedPageSlot* SPSegment::getSlot(BufferFrame& frame, TID recordId)
 	 * | fixed size header | slot | slot | ... | slot |
 	 * |                   ^- pointer to the first slot
 	 */
-	return (SlottedPageSlot*)(frame.getData() + sizeof(SlottedPageHead) + (recordId.getSlotId() * sizeof(SlottedPageHead)));
+	SlottedPage* page = (SlottedPage*)frame.getData();
+
+	return &(page->slots[recordId.getSlotId()]);
+	//return (SlottedPageSlot*)(frame.getData() + sizeof(SlottedPageHead) + (recordId.getSlotId() * sizeof(SlottedPageHead)));
 }
 
 TID SPSegment::isSlotReference(SlottedPageSlot slot)
@@ -232,12 +322,13 @@ TID SPSegment::isSlotReference(SlottedPageSlot slot)
 	long long magicBytes = std::numeric_limits<long long>().max();
 	long long magicBytesBuffer;
 	TID tid = TID::NULLTID();
+	void* buffer = static_cast<void*>(&slot);
 
-	memcpy(&magicBytesBuffer, &slot, 8);
+	memcpy(&magicBytesBuffer, buffer, sizeof(long long));
 
 	if(magicBytes == magicBytesBuffer)
 	{
-		memcpy(&tid, (&slot + 8), 8);
+		memcpy(&tid, buffer + sizeof(long long), sizeof(TID));
 	}
 
 	return tid;
@@ -245,8 +336,10 @@ TID SPSegment::isSlotReference(SlottedPageSlot slot)
 
 void SPSegment::createTIDReferenceSlot(SlottedPageSlot& slot, TID tid)
 {
+	std::cout << "creating slot reference for TID(" << tid.getPageId() << ", " << tid.getSlotId() << ")" << std::endl;
 	long long magicByte = std::numeric_limits<long long>().max();
-	memcpy(&slot, &magicByte, sizeof(long long));
-	memcpy((&slot + sizeof(long long)), &tid, sizeof(long long));
+	void* buffer = static_cast<void*>(&slot);
+	memcpy(buffer, &magicByte, sizeof(magicByte));
+	memcpy((buffer + sizeof(magicByte)), &tid, sizeof(tid));
 }
 

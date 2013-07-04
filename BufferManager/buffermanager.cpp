@@ -125,6 +125,13 @@ BufferFrame& BufferManager::getPage(unsigned int pageId, std::string filename, b
 	    	BufferFrame frame(-1, -1);
 	    	return frame;
 	    }
+	    /*
+	     * if we read zero bytes we hit EOF -> we create a new Page, so lets clear the memory of the frame
+	     */
+	    if(bytesReaded == 0)
+	    {
+	    	memset((*frame).getData(), 0, PAGE_SIZE);
+	    }
 
     	frame->lock(exclusive);
 
