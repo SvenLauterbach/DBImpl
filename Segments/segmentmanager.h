@@ -7,7 +7,7 @@
 #include <memory>
 #include "segmentinformation.h"
 #include "../BTree/btreesegment.h"
-#include "spsegment.h"
+#include "SPSegment/spsegment.h"
 
 typedef unsigned int SegmentID; 
 

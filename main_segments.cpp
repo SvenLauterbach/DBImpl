@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "BufferManager/buffermanager.h"
-#include "Segments/spsegment.h"
+#include "Segments/SPSegment/spsegment.h"
 #include "Segments/segmentmanager.h"
 #include "Segments/segmentinformation.h"
 #include "Segments/record.hpp"
@@ -129,6 +129,7 @@ int main_segments(unsigned int pagesize) {
    // Lookups
    for (auto p : values) {
       TID tid = p.first;
+      std::cout << "TID(" << tid.getPageId() << ", " << tid.getSlotId() << ")" << std::endl;
       const std::string& value = testData[p.second];
       unsigned len = value.size();
       const Record& rec = sp.lookup(tid);

@@ -13,7 +13,7 @@
 #include "../Parser/Types.hpp"
 #include "../Segments/tid.h"
 #include "../Segments/record.hpp"
-#include "../Segments/spsegment.h"
+#include "../Segments/SPSegment/spsegment.h"
 #include "segmentinformation.h"
 #include "../BufferManager/buffermanager.h"
 

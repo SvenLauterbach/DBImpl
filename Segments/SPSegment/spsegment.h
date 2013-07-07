@@ -1,10 +1,10 @@
 #ifndef SPSEGMENT_H
 #define SPSEGMENT_H
-#include "segment.h"
+#include "../segment.h"
 #include "slottedpage.h"
-#include "tid.h"
-#include "record.hpp"
-#include "../BufferManager/buffermanager.h"
+#include "../tid.h"
+#include "../record.hpp"
+#include "../../BufferManager/buffermanager.h"
 #include "slottedpage.h"
 
 class SPSegment : public Segment
@@ -38,7 +38,18 @@ public:
 
 			SlottedPageHead* header = static_cast<SlottedPageHead*>(frame.getData());
 
-			if(header->slotCount >= tid.getSlotId())
+			if(header->getSlotCount() == 0)
+			{
+				tid = TID::NULLTID();
+
+				return *this;
+			}
+			else if(header->getSlotCount() - 1 > tid.getSlotId())
+			{
+				tid = TID(tid.getPageId(), tid.getSlotId() + 1);
+				return *this;
+			}
+			else
 			{
 				/*
 				 * the iterator is on the last slot of this page.
@@ -50,15 +61,8 @@ public:
 					tid = TID::NULLTID();
 					return *this;
 				}
-				else
-				{
-					tid = TID(tid.getPageId() + 1, 0);
-					return *this;
-				}
-			}
-			else
-			{
-				tid = TID(tid.getPageId(), tid.getSlotId() + 1);
+
+				tid = TID(tid.getPageId() + 1, 0);
 
 				return *this;
 			}
@@ -88,7 +92,7 @@ public:
     	BufferFrame& frame = bm.getPage(0, infos.getFileName(), true);
     	SlottedPageHead* head = static_cast<SlottedPageHead*>(frame.getData());
 
-    	if(head->slotCount == 0)
+    	if(head->getSlotCount() == 0)
     	{
     		return end();
     	}
@@ -106,15 +110,13 @@ public:
     	return iterator(TID::NULLTID(), bm, infos);
     }
 
-    static void createTIDReferenceSlot(SlottedPageSlot& slot, TID tid);
-	static SlottedPageSlot* getSlot(BufferFrame& frame, TID recordId);
-	static TID isSlotReference(SlottedPageSlot slot);
+    /*
+    static void createTIDReferenceSlot(SlottedPageSlot* slot, TID tid);
+	static TID isSlotReference(SlottedPageSlot* slot);*/
+	static TID isSlotReference(SlottedPage* page, TID recordId);
+	void Dump(TID recordId);
 
 private:
-
-	void Compact(SlottedPage* page);
-	void InitializePage(SlottedPage* page);
-	unsigned int getFreeSpace(SlottedPage* page);
 
 };
 

@@ -15,9 +15,19 @@ bool SISegmentSimpleTest();
 bool test();
 bool BufferManagerPageNotFoundTest();
 bool CreateSlotReferenceTest();
+bool test2();
 
 int main(int argc, char** argv)
 {
+	/*
+	BufferManager bm("/tmp/db", 8096);
+	SegmentManager* sm = new SegmentManager(bm);
+
+	SPSegment& segment = static_cast<SPSegment&>(sm->getSegment(52));
+
+	segment.Dump(TID(3,3));
+	*/
+
 	main_segments(PAGE_SIZE);
 
 	if(CreateSlotReferenceTest() == true)
@@ -66,6 +76,26 @@ int main(int argc, char** argv)
 	}
 }
 
+bool test2()
+{
+	int i = 0;
+	BufferManager bm("/tmp/db", 10ul*1024ul*1024ul);
+	SegmentManager* manager = new SegmentManager(bm);
+
+	SPSegment& sp = static_cast<SPSegment&>(manager->getSegment(45));
+
+	for(SPSegment::iterator it = sp.begin(); it != sp.end(); ++it)
+	{
+		i++;
+		TID tid = (*it);
+		const Record& record = sp.lookup(tid);
+		std::string text(record.getData(), record.getLen());
+		std::cout << tid.getPageId() << ", " << tid.getSlotId() << ": " << record.getLen() << " - " << text << std::endl;
+	}
+
+	std::cout << i;
+}
+
 bool CreateSlotReferenceTest()
 {
 	bool result1 = false;
@@ -74,9 +104,9 @@ bool CreateSlotReferenceTest()
 	SlottedPageSlot slot;
 
 	TID tid(42,32);
-	SPSegment::createTIDReferenceSlot(slot, tid);
+	slot.createTIDReferenceSlot(tid);
 
-	TID tidtest = SPSegment::isSlotReference(slot);
+	TID tidtest = slot.isSlotReference();
 
 	if(tidtest != TID::NULLTID() && tid == tidtest)
 	{
@@ -92,9 +122,9 @@ bool CreateSlotReferenceTest()
 
 	slot2.isFree = false;
 	slot2.length = 22;
-	slot2.offset = &slot;
+	slot2.offset = 787; //&slot;
 
-	TID tidtest2 = SPSegment::isSlotReference(slot2);
+	TID tidtest2 = slot2.isSlotReference();
 
 	if(tidtest2 == TID::NULLTID())
 	{

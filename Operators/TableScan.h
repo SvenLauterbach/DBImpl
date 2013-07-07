@@ -4,7 +4,7 @@
 #include <string>
 #include "Operator.h"
 #include "../Parser/Schema.hpp"
-#include "../Segments/spsegment.h"
+#include "../Segments/SPSegment/spsegment.h"
 
 
 namespace Operator
