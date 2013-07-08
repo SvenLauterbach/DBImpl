@@ -10,11 +10,9 @@ namespace plan {
 enum class OperatorType { Select, Project, Sort, MergeJoin, TableScan };
 enum class Cmp { EQ /*equality*/ }; // Compare operation
 
-class Operator {
-public:
+struct Operator {
    virtual OperatorType getOperatorType() const = 0;
    virtual void print(std::ostream& out, unsigned indent=0) const = 0;
-   virtual ~Operator();
 };
 
 class BinaryOperator : public Operator {
