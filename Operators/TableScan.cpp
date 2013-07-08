@@ -6,6 +6,7 @@
 namespace Operator
 {
 
+// TODO why is the relation parameter not a reference
 TableScan::TableScan(SPSegment& segment, Schema::Relation relation) : relation(relation), segment(segment)
 {
 	currentPage = 0;
@@ -40,7 +41,8 @@ bool TableScan::next()
 	// maybe TODO: delete old registers?
 	const void* pointer = record.getData();
 	int i = 0;
-	for ( auto field : relation.attributes ) {
+	for ( auto field : relation.attributes )
+	{
 		switch( field.type ) {
 		case Types::Tag::Integer: {
 			int intValue = *((int *)pointer);
