@@ -12,10 +12,10 @@ public:
 	Projection(Operator* input, std::vector<unsigned> attribute_ids);
 	virtual ~Projection();
 
-	virtual void open();
-	virtual bool next();
-	virtual std::vector<Register*> getOutput();
-	virtual void close();
+	void open();
+	bool next();
+	std::vector<Register*> getOutput();
+	void close();
 
 private:
 	Operator* input;
