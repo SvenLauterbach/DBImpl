@@ -16,12 +16,12 @@ class TableScan: public Operator
 {
 public:
 	TableScan(SPSegment& segment, Schema::Relation relation);
-	virtual ~TableScan();
+	~TableScan();
 
-	virtual void open();
-	virtual bool next();
-	virtual std::vector<Register*> getOutput();
-	virtual void close();
+	void open();
+	bool next();
+	std::vector<Register*> getOutput();
+	void close();
 
 private:
 	Schema::Relation& relation;
