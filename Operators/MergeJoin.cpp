@@ -39,8 +39,7 @@ void MergeJoin::open()
 bool MergeJoin::next()
 {
 
-	// TODO: add n:1 case
-	// multiple left tuples with the same join value to one right tuple
+	// TODO: add n:m case
 	unsigned i;
 	bool all_equal;
 	while ( not_done )
