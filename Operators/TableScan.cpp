@@ -41,6 +41,9 @@ bool TableScan::next()
 	// maybe TODO: delete old registers?
 	const void* pointer = record.getData();
 	int i = 0;
+
+	// TODO: change form pointer+=field.len to pointer+offset
+	//		 to handle size grouped order
 	for ( auto field : relation.attributes )
 	{
 		switch( field.type ) {

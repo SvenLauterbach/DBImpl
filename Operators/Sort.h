@@ -11,7 +11,7 @@ class Sort : public Operator::Operator
 {
 public:
 	Sort(Operator* input, std::vector<unsigned> attribute_ids, plan::Sort::Order sort_order);
-	~Sort();
+	virtual ~Sort();
 
 	void open();
 	bool next();

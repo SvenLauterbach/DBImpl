@@ -10,7 +10,7 @@ class Projection : public Operator::Operator
 {
 public:
 	Projection(Operator* input, std::vector<unsigned> attribute_ids);
-	~Projection();
+	virtual ~Projection();
 
 	void open();
 	bool next();
