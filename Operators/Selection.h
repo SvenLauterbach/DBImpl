@@ -17,6 +17,8 @@ public:
 	std::vector<Register*> getOutput();
 	void close();
 private:
+	bool cmp();
+
 	Operator* input;
 	std::vector<unsigned> attribute_ids;
 	std::vector<Register*> constants;

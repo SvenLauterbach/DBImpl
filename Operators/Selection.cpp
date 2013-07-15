@@ -36,15 +36,22 @@ bool Selection::next()
 	while (!all_true && input->next() )
 	{
 		tuple = input->getOutput();
-		// iterate over conditions
-		unsigned i = 0;
-		do {
-			// == calls operator==() of Register class
-			all_true = (tuple[attribute_ids[i]] == constants[i]);
-			i++;
-			// if condition returns false stop iterating over conditions
-		} while ( all_true && i < attribute_ids.size() );
+		// compare current tuple with constants
+		all_true = cmp();
 	}
+	return all_true;
+}
+
+bool Selection::cmp() {
+	bool all_true = false;
+	// iterate over conditions
+	unsigned i = 0;
+	do {
+		// == calls operator==() of Register class
+		all_true = (tuple[attribute_ids[i]] == constants[i]);
+		i++;
+		// if condition returns false stop iterating over conditions
+	} while ( all_true && i < attribute_ids.size() );
 	return all_true;
 }
 
