@@ -41,18 +41,24 @@ bool MergeJoin::next()
 
 	// TODO: add n:1 case
 	// multiple left tuples with the same join value to one right tuple
+	unsigned i;
+	bool all_equal;
 	while ( not_done )
 	{
 		left_tuple = input_left->getOutput();
 		while ( not_done )
 		{
 			right_tuple = input_right->getOutput();
-			// TODO add multiple join values
-			if ( right_tuple[attribute_ids_left[0]] < left_tuple[attribute_ids_left[0]] )
-			{
-				not_done = input_right->next();
+
+			// check if join partners are all equal
+			for ( i = 0; i < attribute_ids_left.size(); i++ ) {
+				if ( !(right_tuple[attribute_ids_right[i]] == left_tuple[attribute_ids_left[i]]) ) {
+					break;
+				}
 			}
-			else if (right_tuple[attribute_ids_left[0]] == left_tuple[attribute_ids_left[0]])
+			all_equal = (attribute_ids_left.size() == i);
+
+			if (all_equal)
 			{
 				// TODO Optimization idea: only copy left if needed
 				output_tuple.clear();
@@ -62,10 +68,17 @@ bool MergeJoin::next()
 				not_done = input_right->next();
 				return true;
 			}
+			else if ( right_tuple[attribute_ids_right[i]] < left_tuple[attribute_ids_left[i]] )
+			{
+				// right tuple is smaller then left tuple (input sorted)
+				// skip this right tuple and compare next
+				not_done = input_right->next();
+			}
 			else {
-				// right tuple > then left tuple:
-				// we need a new left tuple so let's got to the end of the outer loop ;
+				// right tuple bigger then left tuple:
+				// we need a new left tuple ;
 				not_done = input_left->next();
+				// to get the new left tuple we have to go out of the inner loop
 				break;
 			}
 		}
