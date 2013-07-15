@@ -20,6 +20,7 @@ private:
 	Operator* input;
 	std::vector<unsigned> attribute_ids;
 	std::vector<Register*> constants;
+	std::vector<Register*> tuple;
 };
 
 } /* namespace Operator */

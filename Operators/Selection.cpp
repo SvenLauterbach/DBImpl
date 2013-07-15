@@ -6,6 +6,7 @@
  */
 
 #include "Selection.h"
+#include <assert.h>
 
 namespace Operator
 {
@@ -15,7 +16,7 @@ Selection::Selection(Operator* in, std::vector<unsigned> _attribute_ids, std::ve
 	input = in;
 	attribute_ids = _attribute_ids;
 	constants = _constants;
-	std::vector<Register*> output;
+	assert(attribute_ids.size() == constants.size());
 }
 
 Selection::~Selection()
@@ -30,14 +31,31 @@ void Selection::open()
 
 bool Selection::next()
 {
+	bool all_true = false;
+	// repeat until we find an tuple which all conditions fit
+	while (!all_true && input->next() )
+	{
+		tuple = input->getOutput();
+		// iterate over conditions
+		unsigned i = 0;
+		do {
+			// == calls operator==() of Register class
+			all_true = (tuple[attribute_ids[i]] == constants[i]);
+			i++;
+			// if condition returns false stop iterating over conditions
+		} while ( all_true && i < attribute_ids.size() );
+	}
+	return all_true;
 }
 
 std::vector<Register*> Selection::getOutput()
 {
+	return tuple;
 }
 
 void Selection::close()
 {
+	input->close();
 }
 
 } /* namespace Operator */
